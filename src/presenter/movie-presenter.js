@@ -10,6 +10,8 @@ import CommentFilmView from '../view/comment-film-view.js';
 import DetailsGenreView from '../view/details-genre-view.js';
 import {render} from '../render.js';
 
+const FILMS_NUMBER = 5;
+
 export default class MoviePresenter {
   filmsListComponent = new FilmsListView();
 
@@ -33,7 +35,7 @@ export default class MoviePresenter {
 
     this.boardFilms = [...this.filmsModel.getFilms()];
     this.boardComments = this.filmsModel.getComments();
-    for(let i = 0; i < 5; i++){
+    for(let i = 0; i < FILMS_NUMBER; i++){
       render(new FilmCardView({film: this.boardFilms[i]}), filmsContainer);
     }
 
