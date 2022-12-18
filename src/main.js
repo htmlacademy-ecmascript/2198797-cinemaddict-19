@@ -4,10 +4,14 @@ const siteBodyElement = document.querySelector('body');
 const siteMainElement = siteBodyElement.querySelector('.main');
 const siteHeaderElement = siteBodyElement.querySelector('.header');
 const siteFooterElement = siteBodyElement.querySelector('.footer__statistics');
+import FilmsModel from './model/films-model.js';
 
-const moviePresenter = new MoviePresenter({ siteBodyElement: siteBodyElement,
-  siteMainElement: siteMainElement,
-  siteHeaderElement: siteHeaderElement,
-  siteFooterElement: siteFooterElement});
+const filmsModel = new FilmsModel();
+const moviePresenter = new MoviePresenter({siteBodyElement,
+  siteMainElement,
+  siteHeaderElement,
+  siteFooterElement,
+  filmsModel
+});
 
 moviePresenter.init();
