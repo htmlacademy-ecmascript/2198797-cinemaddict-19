@@ -5,23 +5,26 @@ function createDetailsGenreTemplate(genre) {
 }
 
 export default class DetailsGenreView {
+  #element = null;
+  #genre = null;
 
-  constructor({genre}){
-    this.genre = genre;
+  constructor({genre}) {
+    this.#genre = genre;
   }
 
-  getTemplate() {
-    return createDetailsGenreTemplate(this.genre);
+  get template() {
+    return createDetailsGenreTemplate(this.#genre);
   }
 
-  getElement(){
-    if(!this.element){
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
-    return this.element;
+
+    return this.#element;
   }
 
-  removeElement(){
-    this.element = null;
+  removeElement() {
+    this.#element = null;
   }
 }
