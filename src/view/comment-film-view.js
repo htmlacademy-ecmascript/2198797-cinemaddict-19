@@ -20,23 +20,26 @@ function createCommentFilmTemplate(comment) {
 }
 
 export default class CommentFilmView {
+  #element = null;
+  #comment = null;
 
-  constructor({comment}){
-    this.comment = comment;
+  constructor({comment}) {
+    this.#comment = comment;
   }
 
-  getTemplate() {
-    return createCommentFilmTemplate(this.comment);
+  get template() {
+    return createCommentFilmTemplate(this.#comment);
   }
 
-  getElement(){
-    if(!this.element){
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
-    return this.element;
+
+    return this.#element;
   }
 
-  removeElement(){
-    this.element = null;
+  removeElement() {
+    this.#element = null;
   }
 }

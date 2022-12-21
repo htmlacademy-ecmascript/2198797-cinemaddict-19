@@ -13,43 +13,92 @@ import {render} from '../render.js';
 const FILMS_NUMBER = 5;
 
 export default class MoviePresenter {
-  filmsListComponent = new FilmsListView();
+  #siteBodyElement = null;
+  #siteMainElement = null;
+  #siteHeaderElement = null;
+  #siteFooterElement = null;
+  #filmsModel = null;
+
+  #filmsListComponent = new FilmsListView();
+  #filmsContainer = this.#filmsListComponent.element.querySelector('.films-list__container');
+  #filmsList = this.#filmsListComponent.element.querySelector('.films-list');
+
+  #loadedFilms = [];
+  #loadedComments = null;
 
   constructor({siteBodyElement, siteMainElement, siteHeaderElement, siteFooterElement, filmsModel}) {
-    this.siteBodyElement = siteBodyElement;
-    this.siteMainElement = siteMainElement;
-    this.siteHeaderElement = siteHeaderElement;
-    this.siteFooterElement = siteFooterElement;
-    this.filmsModel = filmsModel;
+    this.#siteBodyElement = siteBodyElement;
+    this.#siteMainElement = siteMainElement;
+    this.#siteHeaderElement = siteHeaderElement;
+    this.#siteFooterElement = siteFooterElement;
+    this.#filmsModel = filmsModel;
   }
 
   init() {
-    render(new MenuView, this.siteMainElement);
-    render(new FiltersView, this.siteMainElement);
-    render(this.filmsListComponent, this.siteMainElement);
-    render(new MoviesCounterView, this.siteFooterElement);
-    render(new ProfileRatingView, this.siteHeaderElement);
+    this.#loadedFilms = [...this.#filmsModel.films];
+    this.#loadedComments = this.#filmsModel.comments;
 
-    const filmsContainer = document.querySelector('.films-list__container');
-    const filmsList = document.querySelector('.films-list');
+    this.#renderBoard();
+  }
 
-    this.boardFilms = [...this.filmsModel.getFilms()];
-    this.boardComments = this.filmsModel.getComments();
-    for(let i = 0; i < FILMS_NUMBER; i++){
-      render(new FilmCardView({film: this.boardFilms[i]}), filmsContainer);
-    }
+  #renderPopup(film){
+    const popupView = new PopupView({film});
+    render(popupView, this.#siteBodyElement);
 
-    render(new ShowMoreButtonView, filmsList);
+    const genresList = popupView.element.querySelector('.genres');
+    render(new DetailsGenreView({genre: film.genre}), genresList);
 
-    render(new PopupView({film: this.boardFilms[0]}), this.siteBodyElement);
-
-    const genresList = document.querySelector('.genres');
-    render(new DetailsGenreView({genre: this.boardFilms[0].genre}), genresList);
-
-    const commentList = document.querySelector('.film-details__comments-list');
-    for(let i = 0; i < this.boardFilms[0].comments.length; i++){
-      const tmpComment = this.boardComments[this.boardFilms[0].comments[i]];
+    const commentList = popupView.element.querySelector('.film-details__comments-list');
+    for(let i = 0; i < film.comments.length; i++){
+      const tmpComment = this.#loadedComments[film.comments[i]];
       render(new CommentFilmView({comment: tmpComment}), commentList);
     }
+
+    const closePopup = () => {
+      popupView.element.parentElement.removeChild(popupView.element);
+      popupView.removeElement();
+      this.#siteBodyElement.classList.remove('hide-overflow');
+    };
+
+    const escKeyDownHandler = (evt) => {
+      if (evt.key === 'Escape' || evt.key === 'Esc') {
+        evt.preventDefault();
+        closePopup();
+        document.removeEventListener('keydown', escKeyDownHandler);
+      }
+    };
+
+    popupView.element.querySelector('.film-details__close-btn').addEventListener('click', () =>{
+      closePopup();
+    });
+
+    document.addEventListener('keydown', escKeyDownHandler);
+  }
+
+  #renderFilm(film){
+    const filmCardView = new FilmCardView({film});
+    render(filmCardView, this.#filmsContainer);
+
+    const openPopup = () => {
+      this.#renderPopup(film);
+      this.#siteBodyElement.classList.add('hide-overflow');
+    };
+
+    filmCardView.element.querySelector('.film-card__link').addEventListener('click', () => {
+      openPopup();
+    });
+  }
+
+  #renderBoard(){
+    render(new MenuView, this.#siteMainElement);
+    render(new FiltersView, this.#siteMainElement);
+    render(this.#filmsListComponent, this.#siteMainElement);
+    render(new MoviesCounterView, this.#siteFooterElement);
+    render(new ProfileRatingView, this.#siteHeaderElement);
+
+    for(let i = 0; i < FILMS_NUMBER; i++){
+      this.#renderFilm(this.#loadedFilms[i]);
+    }
+    render(new ShowMoreButtonView, this.#filmsList);
   }
 }
