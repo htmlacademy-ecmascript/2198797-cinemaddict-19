@@ -45,8 +45,7 @@ export default class MoviePresenter {
     this.#renderBoard();
   }
 
-  #showMoreButtonClickHandler = (evt) => {
-    evt.preventDefault();
+  #showMoreButtonClickHandler = () => {
     this.#loadedFilms
       .slice(this.#renderFilmCount, this.#renderFilmCount + FILMS_NUMBER_PER_STEP)
       .forEach((film) => this.#renderFilm(film));
@@ -60,21 +59,8 @@ export default class MoviePresenter {
   };
 
   #renderPopup(film){
-    const popupView = new PopupView({film});
-    render(popupView, this.#siteBodyElement);
-
-    const genresList = popupView.element.querySelector('.genres');
-    render(new DetailsGenreView({genre: film.genre}), genresList);
-
-    const commentList = popupView.element.querySelector('.film-details__comments-list');
-    for(let i = 0; i < film.comments.length; i++){
-      const tmpComment = this.#loadedComments[film.comments[i]];
-      render(new CommentFilmView({comment: tmpComment}), commentList);
-    }
 
     const closePopup = () => {
-      popupView.element.remove();
-      popupView.removeElement();
       this.#siteBodyElement.classList.remove('hide-overflow');
     };
 
@@ -85,26 +71,39 @@ export default class MoviePresenter {
         document.removeEventListener('keydown', escKeyDownHandler);
       }
     };
-
-    popupView.element.querySelector('.film-details__close-btn').addEventListener('click', () =>{
-      closePopup();
-    });
-
     document.addEventListener('keydown', escKeyDownHandler);
+
+    const popupView = new PopupView({film,
+      onClosePopup: () =>{
+        closePopup.call(this);
+      }
+    });
+    render(popupView, this.#siteBodyElement);
+
+    const genresList = popupView.element.querySelector('.genres');
+    render(new DetailsGenreView({genre: film.genre}), genresList);
+
+    const commentList = popupView.element.querySelector('.film-details__comments-list');
+    for(let i = 0; i < film.comments.length; i++){
+      const tmpComment = this.#loadedComments[film.comments[i]];
+      render(new CommentFilmView({comment: tmpComment}), commentList);
+    }
   }
 
   #renderFilm(film){
-    const filmCardView = new FilmCardView({film});
-    render(filmCardView, this.#filmsContainer);
 
     const openPopup = () => {
       this.#renderPopup(film);
       this.#siteBodyElement.classList.add('hide-overflow');
     };
 
-    filmCardView.element.querySelector('.film-card__link').addEventListener('click', () => {
-      openPopup();
-    });
+    const filmCardView = new FilmCardView({film,
+      onFilmPopup: ()=> {
+        openPopup.call(this);
+      }});
+
+    render(filmCardView, this.#filmsContainer);
+
   }
 
   #renderBoard(){
@@ -120,10 +119,14 @@ export default class MoviePresenter {
     }
 
     if (this.#loadedFilms.length > FILMS_NUMBER_PER_STEP) {
-      this.#showMoreButtonComponent = new ShowMoreButtonView;
+      this.#showMoreButtonComponent = new ShowMoreButtonView({
+        onShowMoreButton: ()=> {
+          this.#showMoreButtonClickHandler.call(this);
+        }
+      });
       render(this.#showMoreButtonComponent, this.#filmsList);
 
-      this.#showMoreButtonComponent.element.addEventListener('click', this.#showMoreButtonClickHandler);
+
     }else{
       render(new EmptyListView, this.#filmsList);
     }
