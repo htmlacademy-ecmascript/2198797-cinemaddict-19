@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 function createProfileRatingTemplate() {
   return (`
@@ -9,22 +9,10 @@ function createProfileRatingTemplate() {
   `);
 }
 
-export default class ProfileRatingView {
-  #element = null;
+export default class ProfileRatingView extends AbstractView{
 
   get template() {
     return createProfileRatingTemplate();
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
 }

@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {humanizeDate} from '../utils.js';
 
 function createPopupTemplate(film) {
@@ -117,27 +117,33 @@ function createPopupTemplate(film) {
   `);
 }
 
-export default class PopupView {
-  #element = null;
+export default class PopupView extends AbstractView{
   #film = null;
+  #handlerClosePopup = null;
 
-  constructor({film}) {
+  constructor({film, onClosePopup}) {
+    super();
     this.#film = film;
+    this.#handlerClosePopup = onClosePopup;
+    document.addEventListener('keydown', this.#escButtonHandler);
+    this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#closePopupHandeler);
   }
 
   get template() {
     return createPopupTemplate(this.#film);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
+  #escButtonHandler = (evt)=> {
+    if (evt.key === 'Escape' || evt.key === 'Esc') {
+      this.#closePopupHandeler(evt);
+      document.removeEventListener('keydown', this.#escButtonHandler);
     }
+  };
 
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+  #closePopupHandeler = (evt)=> {
+    evt.preventDefault();
+    this.element.remove();
+    this.removeElement();
+    this.#handlerClosePopup();
+  };
 }

@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 function createMoviesCounterTemplate() {
   return (`
@@ -6,22 +6,9 @@ function createMoviesCounterTemplate() {
   `);
 }
 
-export default class MoviesCounterView {
-  #element = null;
+export default class MoviesCounterView extends AbstractView{
 
   get template() {
     return createMoviesCounterTemplate();
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }
