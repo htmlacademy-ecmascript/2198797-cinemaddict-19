@@ -121,7 +121,7 @@ export default class PopupView extends AbstractView{
   #film = null;
   #handlerClosePopup = null;
 
-  constructor({film, onClosePopup, onEscButton}) {
+  constructor({film, onClosePopup}) {
     super();
     this.#film = film;
     this.#handlerClosePopup = onClosePopup;
