@@ -64,15 +64,6 @@ export default class MoviePresenter {
       this.#siteBodyElement.classList.remove('hide-overflow');
     };
 
-    const escKeyDownHandler = (evt) => {
-      if (evt.key === 'Escape' || evt.key === 'Esc') {
-        evt.preventDefault();
-        closePopup();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      }
-    };
-    document.addEventListener('keydown', escKeyDownHandler);
-
     const popupView = new PopupView({film,
       onClosePopup: () =>{
         closePopup.call(this);

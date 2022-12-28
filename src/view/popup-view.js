@@ -121,17 +121,24 @@ export default class PopupView extends AbstractView{
   #film = null;
   #handlerClosePopup = null;
 
-  constructor({film, onClosePopup}) {
+  constructor({film, onClosePopup, onEscButton}) {
     super();
     this.#film = film;
     this.#handlerClosePopup = onClosePopup;
-
+    document.addEventListener('keydown', this.#escButtonHandler);
     this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#closePopupHandeler);
   }
 
   get template() {
     return createPopupTemplate(this.#film);
   }
+
+  #escButtonHandler = (evt)=> {
+    if (evt.key === 'Escape' || evt.key === 'Esc') {
+      this.#closePopupHandeler(evt);
+      document.removeEventListener('keydown', this.#escButtonHandler);
+    }
+  };
 
   #closePopupHandeler = (evt)=> {
     evt.preventDefault();
