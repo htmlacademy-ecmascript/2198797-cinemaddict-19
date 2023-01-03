@@ -27,6 +27,10 @@ export default class MoviePresenter {
 
   #loadedFilms = [];
   #loadedComments = null;
+  #loadedUser = {};
+  #watchListFilms = [];
+  #historyListFilms = [];
+  #favoritesListFilms = [];
 
   #renderFilmCount = FILMS_NUMBER_PER_STEP;
 
@@ -41,6 +45,8 @@ export default class MoviePresenter {
   init() {
     this.#loadedFilms = [...this.#filmsModel.films];
     this.#loadedComments = this.#filmsModel.comments;
+    this.#loadedUser = this.#filmsModel.user;
+
 
     this.#renderBoard();
   }
@@ -98,11 +104,15 @@ export default class MoviePresenter {
   }
 
   #renderBoard(){
-    render(new MenuView, this.#siteMainElement);
+    render(new MenuView({user: this.#loadedUser}), this.#siteMainElement);
     render(new FiltersView, this.#siteMainElement);
     render(this.#filmsListComponent, this.#siteMainElement);
-    render(new MoviesCounterView, this.#siteFooterElement);
-    render(new ProfileRatingView, this.#siteHeaderElement);
+    render(new MoviesCounterView({filmsCount: this.#filmsModel.getFilmsCount()}), this.#siteFooterElement);
+    render(new ProfileRatingView({profileRating: this.#loadedUser.profileRating}), this.#siteHeaderElement);
+
+    this.#watchListFilms = this.#loadedFilms.filter((element) => this.#loadedUser.watchlist.includes(element.id));
+    this.#historyListFilms = this.#loadedFilms.filter((element) => this.#loadedUser.history.includes(element.id));
+    this.#favoritesListFilms = this.#loadedFilms.filter((element) => this.#loadedUser.favorites.includes(element.id));
 
 
     for (let i = 0; i < Math.min(this.#loadedFilms.length, FILMS_NUMBER_PER_STEP); i++) {
