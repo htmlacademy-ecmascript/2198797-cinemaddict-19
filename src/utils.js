@@ -15,6 +15,23 @@ const getRandomPositiveInteger = (a, b) => {
   const result = Math.random() * (upper - lower + 1) + lower;
   return Math.floor(result);
 };
+const createUniqRandomArray = (min, max, amount) => {
+  if (min < 0 || max < 0) {
+    return NaN;
+  }
+  if (amount > max || min > max) {
+    return NaN;
+  }
+  const values = [];
+
+  while (values.length < amount) {
+    const value = getRandomPositiveInteger(min, max);
+    if(!values.includes(value)){
+      values.push(value);
+    }
+  }
+  return values;
+};
 
 const padTo2Digits = (num) => num.toString().padStart(1, '0');
 
@@ -29,6 +46,6 @@ dayjs.extend(relativeTime);
 const humanizeDate = (dueDate, format) => dueDate ? dayjs(dueDate).format(format) : '';
 const humanizeCommentDate = (dueDate) => dueDate ? dayjs(dueDate).fromNow() : '';
 
-export {getRandomArrayElement, getRandomPositiveInteger, convertMinutesToHours, humanizeDate, humanizeCommentDate};
+export {getRandomArrayElement, getRandomPositiveInteger, createUniqRandomArray, convertMinutesToHours, humanizeDate, humanizeCommentDate};
 
 

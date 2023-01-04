@@ -27,7 +27,16 @@ const COMMENTS_TEXT = [
   'Very very old. Meh',
   'Almost two hours? Seriously?'
 ];
+
 const EMOJIS = ['angry.png', 'puke.png', 'puke.png', 'smile.png'];
 
+const PROFILE_RATINGS = ['Novice', 'Fan', ' Movie Buff'];
 
-export {GENRES, DESCRIPTIONS, DIRECTORS, STARS, COUNTRIES, AGE_RATINGS, POSTERS, COMMENTS_AUTHORS, COMMENTS_TEXT, EMOJIS};
+const FilterType = {
+  WATCHLIST: 'watchlist',
+  HISTORY: 'history',
+  FAVORITES: 'favorites',
+};
+
+
+export {GENRES, DESCRIPTIONS, DIRECTORS, STARS, COUNTRIES, AGE_RATINGS, POSTERS, COMMENTS_AUTHORS, COMMENTS_TEXT, EMOJIS, PROFILE_RATINGS, FilterType};
