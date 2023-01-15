@@ -89,7 +89,7 @@ export default class BoardPresenter {
 
   #closePopupHandler = () => {
     this.#popupPresenter = null;
-  }
+  };
 
   #updateUserToFilmMapHandler = (film, dataMap) => {
     this.#userToFilmMap.delete(film.id);
