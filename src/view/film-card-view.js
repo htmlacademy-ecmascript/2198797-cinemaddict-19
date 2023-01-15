@@ -27,15 +27,50 @@ function createFilmCardTemplate(film) {
 
 export default class FilmCardView extends AbstractView{
   #film = null;
+  #dataMap = null;
   #handlerFilmPopup = null;
+  #handlerFilmControlButton = null;
+  #addToWatchList = null;
+  #markAsWatched = null;
+  #favorite = null;
 
-  constructor({film, onFilmPopup}) {
+  constructor({film, dataMap, onFilmPopup, onFilmControlButton}) {
     super();
     this.#film = film;
+    this.#dataMap = dataMap;
     this.#handlerFilmPopup = onFilmPopup;
+    this.#handlerFilmControlButton = onFilmControlButton;
 
+    this.element.querySelector('.film-card__controls').addEventListener('click', this.#FilmControlButtonHandler);
     this.element.querySelector('.film-card__link').addEventListener('click', this.#filmPopupHandler);
 
+    this.#addToWatchList = this.element.querySelector('.film-card__controls-item--add-to-watchlist');
+    this.#markAsWatched = this.element.querySelector('.film-card__controls-item--mark-as-watched');
+    this.#favorite = this.element.querySelector('.film-card__controls-item--favorite');
+
+    this.#init();
+
+  }
+
+  #init(){
+
+    if(this.#dataMap.isWhantToWatch === 1){
+      this.#addToWatchList.classList.add('film-card__controls-item--active');
+    } else{
+      this.#addToWatchList.classList.remove('film-card__controls-item--active');
+    }
+
+    if(this.#dataMap.isWatched === 1){
+      this.#markAsWatched.classList.add('film-card__controls-item--active');
+    } else{
+      this.#markAsWatched.classList.remove('film-card__controls-item--active');
+    }
+
+    if(this.#dataMap.isFavorite === 1){
+      this.#favorite.classList.add('film-card__controls-item--active');
+    } else{
+      this.#favorite.classList.remove('film-card__controls-item--active');
+    }
   }
 
   get template() {
@@ -45,5 +80,18 @@ export default class FilmCardView extends AbstractView{
   #filmPopupHandler = (evt) => {
     evt.preventDefault();
     this.#handlerFilmPopup();
+  };
+
+  #FilmControlButtonHandler = (evt) =>{
+    if(evt.target.classList.contains('film-card__controls-item--mark-as-watched')){
+      this.#dataMap.isWatched = Math.abs(this.#dataMap.isWatched - 1);
+    }
+    if(evt.target.classList.contains('film-card__controls-item--add-to-watchlist')){
+      this.#dataMap.isWhantToWatch = Math.abs(this.#dataMap.isWhantToWatch - 1);
+    }
+    if(evt.target.classList.contains('film-card__controls-item--favorite')){
+      this.#dataMap.isFavorite = Math.abs(this.#dataMap.isFavorite - 1);
+    }
+    this.#handlerFilmControlButton(this.#film, this.#dataMap);
   };
 }
