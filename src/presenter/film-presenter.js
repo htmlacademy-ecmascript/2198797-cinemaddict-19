@@ -1,5 +1,6 @@
 import FilmCardView from '../view/film-card-view.js';
 import {render, replace, remove} from '../framework/render.js';
+import {FilterType} from '../const.js';
 
 
 export default class FilmPresenter{
@@ -55,8 +56,19 @@ export default class FilmPresenter{
     this.#openPopupHendler(this.#film, this.#dataMap);
   }
 
-  #updateMap = (film, dataMap) => {
-    this.#updateUserToFilmMapHandler(film, dataMap);
+  #updateMap = (element) => {
+    switch(element){
+      case FilterType.WATCHLIST:
+        this.#dataMap.isWhantToWatch = Math.abs(this.#dataMap.isWhantToWatch - 1);
+        break;
+      case FilterType.HISTORY:
+        this.#dataMap.isWatched = Math.abs(this.#dataMap.isWatched - 1);
+        break;
+      case FilterType.FAVORITES:
+        this.#dataMap.isFavorite = Math.abs(this.#dataMap.isFavorite - 1);
+        break;
+    }
+    this.#updateUserToFilmMapHandler(this.#film, this.#dataMap);
   };
 
 }

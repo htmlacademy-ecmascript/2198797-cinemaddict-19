@@ -3,7 +3,7 @@ import DetailsGenreView from '../view/details-genre-view.js';
 import FilmDetailsControlView from '../view/film-details-control-view.js';
 import PopupView from '../view/popup-view.js';
 import {render, RenderPosition, replace, remove} from '../framework/render.js';
-
+import {FilterType} from '../const.js';
 
 export default class PopupPresenter{
   #updateUserToFilmMapHandler = null;
@@ -85,8 +85,19 @@ export default class PopupPresenter{
   }
 
 
-  #updateMap = (dataMap) => {
-    this.#updateUserToFilmMapHandler(this.#film, dataMap);
+  #updateMap = (element) => {
+    switch(element){
+      case FilterType.WATCHLIST:
+        this.#dataMap.isWhantToWatch = Math.abs(this.#dataMap.isWhantToWatch - 1);
+        break;
+      case FilterType.HISTORY:
+        this.#dataMap.isWatched = Math.abs(this.#dataMap.isWatched - 1);
+        break;
+      case FilterType.FAVORITES:
+        this.#dataMap.isFavorite = Math.abs(this.#dataMap.isFavorite - 1);
+        break;
+    }
+    this.#updateUserToFilmMapHandler(this.#film, this.#dataMap);
     this.#renderFilmDetailsControlElement();
   };
 

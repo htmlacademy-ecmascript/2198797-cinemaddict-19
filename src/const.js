@@ -34,9 +34,14 @@ const PROFILE_RATINGS = ['Novice', 'Fan', ' Movie Buff'];
 
 const FilterType = {
   WATCHLIST: 'watchlist',
-  HISTORY: 'history',
-  FAVORITES: 'favorites',
+  HISTORY: 'watched',
+  FAVORITES: 'favorite',
 };
 
+const SortType = {
+  DEFAULT: 'default',
+  BY_DATE: 'by-date',
+  BY_RATING: 'by-rating',
+};
 
-export {GENRES, DESCRIPTIONS, DIRECTORS, STARS, COUNTRIES, AGE_RATINGS, POSTERS, COMMENTS_AUTHORS, COMMENTS_TEXT, EMOJIS, PROFILE_RATINGS, FilterType};
+export {GENRES, DESCRIPTIONS, DIRECTORS, STARS, COUNTRIES, AGE_RATINGS, POSTERS, COMMENTS_AUTHORS, COMMENTS_TEXT, EMOJIS, PROFILE_RATINGS, FilterType, SortType};

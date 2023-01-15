@@ -1,4 +1,4 @@
-import FiltersView from '../view/filters-view.js';
+import SortView from '../view/sort-view.js';
 import FilmsListView from '../view/films-list-view.js';
 import MoviesCounterView from '../view/movies-counter-view';
 import ProfileRatingView from '../view/profile-rating-view.js';
@@ -139,7 +139,7 @@ export default class BoardPresenter {
 
   #renderBoard(){
     this.#renderMenuView();
-    render(new FiltersView, this.#siteMainElement);
+    render(new SortView, this.#siteMainElement);
     render(this.#filmsListComponent, this.#siteMainElement);
     render(new MoviesCounterView({filmsCount: this.#filmsModel.getFilmsCount()}), this.#siteFooterElement);
 
