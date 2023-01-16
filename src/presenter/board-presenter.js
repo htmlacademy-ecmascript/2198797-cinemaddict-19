@@ -166,7 +166,6 @@ export default class BoardPresenter {
   };
 
   #clearFilmList() {
-    console.log('Hello');
     this.#filmPresentorCollection.forEach((presenter) => presenter.destroy());
     this.#filmPresentorCollection = [];
     this.#renderFilmCount = 0;

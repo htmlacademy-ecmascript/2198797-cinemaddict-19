@@ -73,7 +73,6 @@ export default class FilmPresenter{
 
   destroy() {
     remove(this.#filmCardView);
-    console.log(this.#filmCardView.element);
   }
 
 }
