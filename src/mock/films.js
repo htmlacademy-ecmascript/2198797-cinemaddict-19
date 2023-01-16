@@ -2,7 +2,7 @@ import {getRandomArrayElement, getRandomPositiveInteger, convertMinutesToHours} 
 import {GENRES, DESCRIPTIONS, DIRECTORS, STARS, COUNTRIES,AGE_RATINGS, POSTERS} from '../const.js';
 import {MAX_COMMENTS_NUMBER} from './comments.js';
 
-const FILMS_COUNT = 27;
+const FILMS_COUNT = 14;
 
 const getRandomNumber = () => getRandomPositiveInteger(0, MAX_COMMENTS_NUMBER - 1);
 
@@ -26,7 +26,7 @@ const getMockFilm = () =>
       description: getRandomArrayElement(DESCRIPTIONS),
       country: getRandomArrayElement(COUNTRIES),
       ageRating: getRandomArrayElement(AGE_RATINGS),
-      comments: Array.from({length: getRandomPositiveInteger(0, MAX_COMMENTS_NUMBER)},getRandomNumber)
+      comments: Array.from({length: getRandomPositiveInteger(0, MAX_COMMENTS_NUMBER)},getRandomNumber),
     };
   };
 };

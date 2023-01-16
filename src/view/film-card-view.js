@@ -1,7 +1,9 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import {humanizeDate} from '../utils.js';
 
-function createFilmCardTemplate(film) {
+const ACTIVATE_ELEMENT_CLASS = 'film-card__controls-item--active';
+
+function createFilmCardTemplate(film, dataMap) {
   return (`
   <article class="film-card">
   <a class="film-card__link">
@@ -17,9 +19,9 @@ function createFilmCardTemplate(film) {
     <span class="film-card__comments">${film.comments.length}</span>
   </a>
   <div class="film-card__controls">
-    <button class="film-card__controls-item film-card__controls-item--add-to-watchlist" type="button">Add to watchlist</button>
-    <button class="film-card__controls-item film-card__controls-item--mark-as-watched film-card__controls-item--active" type="button">Mark as watched</button>
-    <button class="film-card__controls-item film-card__controls-item--favorite" type="button">Mark as favorite</button>
+    <button class="film-card__controls-item film-card__controls-item--add-to-watchlist ${ACTIVATE_ELEMENT_CLASS.repeat(dataMap.isWhantToWatch)}" type="button" id="watchlist">Add to watchlist</button>
+    <button class="film-card__controls-item film-card__controls-item--mark-as-watched ${ACTIVATE_ELEMENT_CLASS.repeat(dataMap.isWatched)}" type="button" id="watched">Mark as watched</button>
+    <button class="film-card__controls-item film-card__controls-item--favorite ${ACTIVATE_ELEMENT_CLASS.repeat(dataMap.isFavorite)}" type="button" id="favorite">Mark as favorite</button>
   </div>
 </article>
   `);
@@ -27,23 +29,31 @@ function createFilmCardTemplate(film) {
 
 export default class FilmCardView extends AbstractView{
   #film = null;
+  #dataMap = null;
   #handlerFilmPopup = null;
+  #handlerFilmControlButton = null;
 
-  constructor({film, onFilmPopup}) {
+  constructor({film, dataMap, onFilmPopup, onFilmControlButton}) {
     super();
     this.#film = film;
+    this.#dataMap = dataMap;
     this.#handlerFilmPopup = onFilmPopup;
+    this.#handlerFilmControlButton = onFilmControlButton;
 
+    this.element.querySelector('.film-card__controls').addEventListener('click', this.#FilmControlButtonHandler);
     this.element.querySelector('.film-card__link').addEventListener('click', this.#filmPopupHandler);
-
   }
 
   get template() {
-    return createFilmCardTemplate(this.#film);
+    return createFilmCardTemplate(this.#film, this.#dataMap);
   }
 
   #filmPopupHandler = (evt) => {
     evt.preventDefault();
     this.#handlerFilmPopup();
+  };
+
+  #FilmControlButtonHandler = (evt) =>{
+    this.#handlerFilmControlButton(evt.target.id);
   };
 }

@@ -1,4 +1,4 @@
-import MoviePresenter from './presenter/movie-presenter.js';
+import BoardPresenter from './presenter/board-presenter.js';
 
 const siteBodyElement = document.querySelector('body');
 const siteMainElement = siteBodyElement.querySelector('.main');
@@ -7,7 +7,7 @@ const siteFooterElement = siteBodyElement.querySelector('.footer__statistics');
 import FilmsModel from './model/films-model.js';
 
 const filmsModel = new FilmsModel();
-const moviePresenter = new MoviePresenter({siteBodyElement,
+const moviePresenter = new BoardPresenter({siteBodyElement,
   siteMainElement,
   siteHeaderElement,
   siteFooterElement,
