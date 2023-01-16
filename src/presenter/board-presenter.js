@@ -8,6 +8,8 @@ import FilmPresenter from './film-presenter.js';
 import PopupPresenter from './popup-presenter.js';
 import MenuPresenter from './menu-presenter.js';
 import ShowMoreButtonPresenter from './show-more-button-presenter.js';
+import { SortType } from '../const.js';
+import {sortByDate, sortByRating} from '../utils.js';
 
 const FILMS_NUMBER_PER_STEP = 5;
 
@@ -30,6 +32,8 @@ export default class BoardPresenter {
   #loadedFilms = [];
   #loadedComments = null;
   #userToFilmMap = null;
+  #sourceFilmList = [];
+  #currentSortType = SortType.DEFAULT;
 
   #renderFilmCount = 0;
 
@@ -44,6 +48,7 @@ export default class BoardPresenter {
 
   init() {
     this.#loadedFilms = [...this.#filmsModel.films];
+    this.#sourceFilmList = [...this.#filmsModel.films];
     this.#loadedComments = this.#filmsModel.comments;
     this.#userToFilmMap = this.#filmsModel.userToFilmMap;
 
@@ -67,7 +72,7 @@ export default class BoardPresenter {
   #showMoreButtonClickHandler = () => {
     this.#renderFilm();
     if (this.#renderFilmCount >= this.#loadedFilms.length) {
-      this.#showMoreButtonPresenter.deleteView();
+      this.#showMoreButtonPresenter.destroy();
     }
   };
 
@@ -136,15 +141,52 @@ export default class BoardPresenter {
     }
   };
 
+  #sortTasks(sortType) {
+    switch (sortType) {
+      case SortType.BY_DATE:
+        this.#loadedFilms.sort(sortByDate);
+        break;
+      case SortType.BY_RATING:
+        this.#loadedFilms.sort(sortByRating);
+        break;
+      default:
+        this.#loadedFilms = [...this.#sourceFilmList];
+    }
+    this.#currentSortType = sortType;
+  }
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+    this.#sortTasks(sortType);
+    this.#clearFilmList();
+    this.#renderFilm();
+    this.#renderShowMoreButton();
+  };
+
+  #clearFilmList() {
+    console.log('Hello');
+    this.#filmPresentorCollection.forEach((presenter) => presenter.destroy());
+    this.#filmPresentorCollection = [];
+    this.#renderFilmCount = 0;
+    this.#showMoreButtonPresenter.destroy();
+  }
+
+  #renderSortView = () => {
+    render(new SortView({
+      onSortTypeChange: this.#handleSortTypeChange,
+    }), this.#siteMainElement);
+  };
 
   #renderBoard(){
     this.#renderMenuView();
-    render(new SortView, this.#siteMainElement);
+    this.#renderSortView();
     render(this.#filmsListComponent, this.#siteMainElement);
     render(new MoviesCounterView({filmsCount: this.#filmsModel.getFilmsCount()}), this.#siteFooterElement);
-
     this.#renderProfileRatingView();
     this.#renderFilm();
     this.#renderShowMoreButton();
   }
 }
+

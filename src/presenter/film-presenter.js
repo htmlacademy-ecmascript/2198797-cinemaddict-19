@@ -71,4 +71,9 @@ export default class FilmPresenter{
     this.#updateUserToFilmMapHandler(this.#film, this.#dataMap);
   };
 
+  destroy() {
+    remove(this.#filmCardView);
+    console.log(this.#filmCardView.element);
+  }
+
 }
