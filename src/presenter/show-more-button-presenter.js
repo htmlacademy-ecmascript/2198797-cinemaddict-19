@@ -25,7 +25,7 @@ export default class ShowMoreButtonPresenter{
     }
   }
 
-  deleteView(){
+  destroy(){
     remove(this.#showMoreButtonComponent);
   }
 
