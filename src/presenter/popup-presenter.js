@@ -76,6 +76,7 @@ export default class PopupPresenter{
         closePopup.call(this);
       },
       onFilmControlButton: this.#updateMap,
+      rerenderPopup: this.#rerenderPopup,
     });
     render(this.#popupView, this.#siteBodyElement);
 
@@ -101,4 +102,9 @@ export default class PopupPresenter{
     this.#renderFilmDetailsControlElement();
   };
 
+  #rerenderPopup = () => {
+    this.#renderGenresList();
+    this.#renderCommentsList();
+    this.#renderFilmDetailsControlElement();
+  }
 }
