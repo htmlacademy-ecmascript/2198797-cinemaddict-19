@@ -1,8 +1,6 @@
-import CommentFilmView from '../view/comment-film-view.js';
-import DetailsGenreView from '../view/details-genre-view.js';
 import FilmDetailsControlView from '../view/film-details-control-view.js';
 import PopupView from '../view/popup-view.js';
-import {render, RenderPosition, replace, remove} from '../framework/render.js';
+import {render, RenderPosition} from '../framework/render.js';
 import {FilterType} from '../const.js';
 
 export default class PopupPresenter{
@@ -28,40 +26,6 @@ export default class PopupPresenter{
     this.#comments = comments;
     this.#dataMap = dataMap;
 
-    this.#renderPopup();
-  }
-
-  #renderGenresList(){
-    const genresList = this.#popupView.element.querySelector('.genres');
-    render(new DetailsGenreView({genre: this.#film.genre}), genresList);
-  }
-
-  #renderCommentsList(){
-    const commentList = this.#popupView.element.querySelector('.film-details__comments-list');
-    for(let i = 0; i < this.#comments.length ; i++){
-      render(new CommentFilmView({comment: this.#comments[i]}), commentList);
-    }
-  }
-
-  #renderFilmDetailsControlElement(){
-    const containerForControlView = this.#popupView.element.querySelector('.film-details__top-container');
-    const preveusFilmDetailsControlView = this.#filmDetailsControlView;
-
-    this.#filmDetailsControlView = new FilmDetailsControlView({
-      dataMap:this.#dataMap,
-      onFilmControlButton: this.#updateMap});
-
-    if(preveusFilmDetailsControlView === null){
-      render(this.#filmDetailsControlView, containerForControlView, RenderPosition.BEFOREEND);
-      return;
-    }
-    if (containerForControlView.contains(preveusFilmDetailsControlView.element)) {
-      replace(this.#filmDetailsControlView, preveusFilmDetailsControlView);
-    }
-    remove(preveusFilmDetailsControlView);
-  }
-
-  #renderPopup(){
     this.#siteBodyElement.classList.add('hide-overflow');
 
     const closePopup = () => {
@@ -71,19 +35,25 @@ export default class PopupPresenter{
 
     this.#popupView = new PopupView({
       film: this.#film,
+      comments: this.#comments,
       dataMap: this.#dataMap,
       onClosePopup: () =>{
         closePopup.call(this);
       },
       onFilmControlButton: this.#updateMap,
+      rerenderPopup: this.#rerenderPopup,
     });
     render(this.#popupView, this.#siteBodyElement);
-
-    this.#renderGenresList();
-    this.#renderCommentsList();
     this.#renderFilmDetailsControlElement();
   }
 
+  #renderFilmDetailsControlElement(){
+    const containerForControlView = this.#popupView.element.querySelector('.film-details__top-container');
+    this.#filmDetailsControlView = new FilmDetailsControlView({
+      dataMap:this.#dataMap,
+      onFilmControlButton: this.#updateMap});
+    render(this.#filmDetailsControlView, containerForControlView, RenderPosition.BEFOREEND);
+  }
 
   #updateMap = (element) => {
     switch(element){
@@ -98,7 +68,9 @@ export default class PopupPresenter{
         break;
     }
     this.#updateUserToFilmMapHandler(this.#film, this.#dataMap);
-    this.#renderFilmDetailsControlElement();
   };
 
+  #rerenderPopup = () => {
+    this.#renderFilmDetailsControlElement();
+  };
 }
