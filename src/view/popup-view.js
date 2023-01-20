@@ -1,7 +1,53 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import {humanizeDate} from '../utils.js';
+import {humanizeDate, humanizeCommentDate} from '../utils.js';
+
+const EMOJIS = {
+  'angry': 'angry.png',
+  'puke': 'puke.png',
+  'sleeping': 'sleeping.png',
+  'smile': 'smile.png'
+};
+
+function createCommentListTemplate(comment) {
+  return (`
+  <li class="film-details__comment">
+  <span class="film-details__comment-emoji">
+    <img src="./images/emoji/${comment.emoji}" width="55" height="55" alt="emoji-puke">
+  </span>
+  <div>
+    <p class="film-details__comment-text">${comment.text}</p>
+    <p class="film-details__comment-info">
+      <span class="film-details__comment-author">${comment.author}</span>
+      <span class="film-details__comment-day">${humanizeCommentDate(comment.date)}</span>
+      <button class="film-details__comment-delete">Delete</button>
+    </p>
+  </div>
+</li>
+  `);
+}
+
+function createDetailsGenreTemplate(genre) {
+  return (`<span class="film-details__genre">${genre}</span>`);
+}
+
+function createEmojiListTemplate(file) {
+  return(Object.entries(EMOJIS).map(([emoji, fileName]) => `
+  <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-${emoji}" value="${emoji}" ${file.emoji === fileName ? 'checked' : ''}>
+            <label class="film-details__emoji-label" for="emoji-${emoji}" data-emoji-file=${fileName}>
+              <img src="./images/emoji/${fileName}" width="30" height="30" alt="emoji">
+            </label>
+  `).join('')
+  );
+}
 
 function createPopupTemplate(film) {
+  const tempArrayForTemplates = [];
+  film.comments.forEach((element) => {
+    tempArrayForTemplates.push(createCommentListTemplate(element));
+  });
+  const commentsTemlate = tempArrayForTemplates.join('');
+  const genreTemplate = createDetailsGenreTemplate(film.genre);
+  const emojiListTemplate = createEmojiListTemplate(film);
   return (`
   <section class="film-details">
   <div class="film-details__inner">
@@ -56,7 +102,7 @@ function createPopupTemplate(film) {
             <tr class="film-details__row">
               <td class="film-details__term">Genres</td>
               <td class="film-details__cell genres">
-
+              ${genreTemplate}
               </td>
             </tr>
           </table>
@@ -75,35 +121,18 @@ function createPopupTemplate(film) {
         <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${film.comments.length}</span></h3>
 
         <ul class="film-details__comments-list">
+        ${commentsTemlate}
         </ul>
 
         <form class="film-details__new-comment" action="" method="get">
-          <div class="film-details__add-emoji-label">${film.emoji ? `<img src="./images/emoji/${film.emoji}" width="60" height="60" >` : ``}</div>
+          <div class="film-details__add-emoji-label">${film.emoji ? `<img src="./images/emoji/${film.emoji}" width="60" height="60" >` : ''}</div>
 
           <label class="film-details__comment-label">
             <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment"></textarea>
           </label>
 
           <div class="film-details__emoji-list">
-            <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-smile" value="smile" >
-            <label class="film-details__emoji-label" for="emoji-smile" data-emoji-file="smile.png">
-              <img src="./images/emoji/smile.png" width="30" height="30" alt="emoji">
-            </label>
-
-            <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping" >
-            <label class="film-details__emoji-label" for="emoji-sleeping" data-emoji-file="sleeping.png">
-              <img src="./images/emoji/sleeping.png" width="30" height="30" alt="emoji">
-            </label>
-
-            <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-puke" value="puke" >
-            <label class="film-details__emoji-label" for="emoji-puke" data-emoji-file="puke.png">
-              <img src="./images/emoji/puke.png" width="30" height="30" alt="emoji">
-            </label>
-
-            <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-angry" value="angry" >
-            <label class="film-details__emoji-label" for="emoji-angry" data-emoji-file="angry.png">
-              <img src="./images/emoji/angry.png" width="30" height="30" alt="emoji">
-            </label>
+            ${emojiListTemplate}
           </div>
         </form>
       </section>
@@ -115,17 +144,18 @@ function createPopupTemplate(film) {
 
 export default class PopupView extends AbstractStatefulView{
   #film = null;
+  #comments = null;
   #handlerClosePopup = null;
   #rerenderPopup = null;
 
 
-  constructor({film, onClosePopup, rerenderPopup}) {
+  constructor({film, comments, onClosePopup, rerenderPopup}) {
     super();
     this.#film = film;
+    this.#comments = comments;
     this.#handlerClosePopup = onClosePopup;
     this.#rerenderPopup = rerenderPopup;
-    this._setState(PopupView.parseFilmToState(film));
-
+    this._setState(PopupView.parseFilmToState(film, comments));
     this._restoreHandlers();
   }
 
@@ -150,17 +180,17 @@ export default class PopupView extends AbstractStatefulView{
 
   #emojiHandler = (evt) => {
     evt.preventDefault();
-    console.log(this._state);
     this.updateElement({
       emoji: evt.target.parentElement.dataset.emojiFile,
     });
-    console.log(this._state);
     this.#rerenderPopup();
+    this.element.querySelector('.film-details__emoji-list').scrollIntoView();
   };
 
-  static parseFilmToState(task, comment) {
+  static parseFilmToState(task, comments) {
     return {
       ...task,
+      comments,
       emoji: null
     };
   }
