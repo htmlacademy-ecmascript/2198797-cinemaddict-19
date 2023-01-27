@@ -1,6 +1,6 @@
 import FilmCardView from '../view/film-card-view.js';
 import {render, replace, remove} from '../framework/render.js';
-import {FilterType} from '../const.js';
+import {FilterType, UserAction, UpdateType} from '../const.js';
 
 
 export default class FilmPresenter{
@@ -68,7 +68,11 @@ export default class FilmPresenter{
         this.#dataMap.isFavorite = Math.abs(this.#dataMap.isFavorite - 1);
         break;
     }
-    this.#updateUserToFilmMapHandler(this.#film, this.#dataMap);
+
+    this.#updateUserToFilmMapHandler(
+      UserAction.UPDATE_FILM_DETAILS,
+      UpdateType.PATCH,
+      {film: this.#film, dataMap: this.#dataMap});
   };
 
   destroy() {

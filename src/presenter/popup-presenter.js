@@ -1,7 +1,7 @@
 import FilmDetailsControlView from '../view/film-details-control-view.js';
 import PopupView from '../view/popup-view.js';
 import {render, RenderPosition} from '../framework/render.js';
-import {FilterType} from '../const.js';
+import {FilterType, UserAction, UpdateType} from '../const.js';
 
 export default class PopupPresenter{
   #updateUserToFilmMapHandler = null;
@@ -67,7 +67,10 @@ export default class PopupPresenter{
         this.#dataMap.isFavorite = Math.abs(this.#dataMap.isFavorite - 1);
         break;
     }
-    this.#updateUserToFilmMapHandler(this.#film, this.#dataMap);
+    this.#updateUserToFilmMapHandler(
+      UserAction.UPDATE_FILM_DETAILS,
+      UpdateType.PATCH,
+      {film: this.#film, dataMap: this.#dataMap});
   };
 
   #rerenderPopup = () => {

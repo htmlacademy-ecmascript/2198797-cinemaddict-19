@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {SortType} from '../const.js';
+import {SortType, UpdateType, UserAction} from '../const.js';
 
 
 function createSortTemplate() {
@@ -23,6 +23,11 @@ export default class SortView extends AbstractView{
     this.element.addEventListener('click', this.#sortTypeChangeHandler);
   }
 
+  setActiveSortType(sortType){
+    this.element.querySelectorAll('a').forEach((elem) => elem.classList.remove('sort__button--active'));
+    this.element.querySelector(`#${sortType}`).classList.add('sort__button--active');
+  }
+
 
   get template() {
     return createSortTemplate();
@@ -36,7 +41,10 @@ export default class SortView extends AbstractView{
     evt.preventDefault();
     this.element.querySelectorAll('a').forEach((elem) => elem.classList.remove('sort__button--active'));
     this.element.querySelector(`#${evt.target.dataset.sortType}`).classList.add('sort__button--active');
-    this.#handleSortTypeChange(evt.target.dataset.sortType);
+    this.#handleSortTypeChange(
+      UserAction.UPDATE_SORT_VIEW,
+      UpdateType.MINOR,
+      evt.target.dataset.sortType);
   };
 
 }
