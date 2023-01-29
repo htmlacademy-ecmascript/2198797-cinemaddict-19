@@ -63,7 +63,7 @@ export default class BoardPresenter {
   get films(){
     this.#filterType = this.#filtersModel.filter;
     const films = [...this.#filmsModel.films];
-    const filteredFilms = filter[this.#filterType](films, this.#userToFilmMap);
+    const filteredFilms = filter[this.#filterType](films);
 
     switch (this.#currentSortType) {
       case SortType.BY_DATE:
@@ -84,7 +84,7 @@ export default class BoardPresenter {
       openPopupHendler: this.#openPopupHandler,
       updateUserToFilmMapHandler: this.#handleViewAction
     }));
-    this.#filmPresentorCollection[this.#filmPresentorCollection.length - 1].init(film, this.#userToFilmMap.get(film.id));
+    this.#filmPresentorCollection[this.#filmPresentorCollection.length - 1].init(film);
   };
 
   #showMoreButtonClickHandler = () => {
@@ -94,20 +94,21 @@ export default class BoardPresenter {
     }
   };
 
-  #openPopupHandler = (film, dataMap) => {
+  #openPopupHandler = (film) => {
     if(this.#popupPresenter !== null ){
       return;
     }
     this.#popupPresenter = new PopupPresenter({
       siteBodyElement: this.#siteBodyElement,
-      updateUserToFilmMapHandler: this.#handleViewAction,
+      updateFilmDetails: this.#handleViewAction,
       closePopupHandler: this.#closePopupHandler,
+      submitNewComment: this.#handleViewAction,
     });
     const tmpComments = [];
     for(let i = 0; i < film.comments.length; i++){
       tmpComments.push(this.#loadedComments[film.comments[i]]);
     }
-    this.#popupPresenter.init(film, dataMap, tmpComments);
+    this.#popupPresenter.init(film, tmpComments);
   };
 
   #closePopupHandler = () => {
@@ -122,7 +123,7 @@ export default class BoardPresenter {
   #renderProfileRatingView = () => {
     let rating = 0;
     let profileRating = null;
-    this.#userToFilmMap.forEach((element) => element.isWatched ? rating++ : rating);
+    this.films.forEach((element) => element.userDetails.isWatched ? rating++ : rating);
     if(rating > 0){
       profileRating = 'Novice';
     }
@@ -180,16 +181,17 @@ export default class BoardPresenter {
         }
         this.#currentSortType = update;
         this.#handleModelEvent(updateType, {});
+        break;
     }
   };
 
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
-        this.#filterPresenter.init(this.#userToFilmMap);
+        this.#filterPresenter.init();
         this.#filmPresentorCollection.find((element) => {
-          if(element.getId() === data.film.id){
-            element.init(data.film, data.dataMap);
+          if(element.getId() === data.id){
+            element.init(data);
           }
         });
         break;

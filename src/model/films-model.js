@@ -1,9 +1,9 @@
 import Observable from '../framework/observable.js';
 import {getMockFilm, FILMS_COUNT} from '../mock/films.js';
-import {MOCK_COMMENTS} from '../mock/comments.js';
-import {getUserInfo} from '../mock/user.js';
+import {makeComment, MAX_COMMENTS_NUMBER} from '../mock/comments.js';
 
 const generateFilm = getMockFilm();
+const generateComment = makeComment();
 
 export default class FilmsModel extends Observable {
 
@@ -14,8 +14,7 @@ export default class FilmsModel extends Observable {
   constructor() {
     super();
     this.#films = Array.from({length: FILMS_COUNT}, generateFilm);
-    this.#films.forEach((element) => this.#userToFilmMap.set(element.id, getUserInfo()));
-    this.#comments = MOCK_COMMENTS;
+    this.#comments = Array.from({length: MAX_COMMENTS_NUMBER}, generateComment);
   }
 
   get films() {
@@ -26,17 +25,14 @@ export default class FilmsModel extends Observable {
     return this.#comments;
   }
 
-  get userToFilmMap() {
-    return this.#userToFilmMap;
-  }
-
   getFilmsCount(){
     return FILMS_COUNT;
   }
 
   updateFilmDetails(updateType, update){
-    this.#userToFilmMap.delete(update.film.id);
-    this.#userToFilmMap.set(update.film.id, update.dataMap);
+    const filmForRrplaceIndex = this.#films.findIndex((element) => element.id === update.id);
+    this.#films[filmForRrplaceIndex] = update;
     this._notify(updateType, update);
   }
+
 }

@@ -1,5 +1,7 @@
+//import { NormalModuleReplacementPlugin } from 'webpack';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {humanizeDate, humanizeCommentDate} from '../utils.js';
+import {UpdateType, UserAction} from '../const.js';
 
 const EMOJIS = {
   'angry': 'angry.png',
@@ -10,7 +12,7 @@ const EMOJIS = {
 
 function createCommentListTemplate(comment) {
   return (`
-  <li class="film-details__comment">
+  <li class="film-details__comment" id="comment${comment.id}">
   <span class="film-details__comment-emoji">
     <img src="./images/emoji/${comment.emoji}" width="55" height="55" alt="emoji-puke">
   </span>
@@ -19,7 +21,7 @@ function createCommentListTemplate(comment) {
     <p class="film-details__comment-info">
       <span class="film-details__comment-author">${comment.author}</span>
       <span class="film-details__comment-day">${humanizeCommentDate(comment.date)}</span>
-      <button class="film-details__comment-delete">Delete</button>
+      <button class="film-details__comment-delete"  data-id="${comment.id}">Delete</button>
     </p>
   </div>
 </li>
@@ -145,17 +147,20 @@ function createPopupTemplate(film) {
 export default class PopupView extends AbstractStatefulView{
   #film = null;
   #comments = null;
+  #newComment = {};
   #handlerClosePopup = null;
   #rerenderPopup = null;
+  #deleteComment = null;
 
 
-  constructor({film, comments, onClosePopup, rerenderPopup}) {
+  constructor({film, comments, onClosePopup, rerenderPopup, deleteComment}) {
     super();
     this.#film = film;
     this.#comments = comments;
     this.#handlerClosePopup = onClosePopup;
     this.#rerenderPopup = rerenderPopup;
-    this._setState(PopupView.parseFilmToState(film, comments));
+    this.#deleteComment = deleteComment;
+    this._setState(PopupView.parseFilmAndCommentsToState(film, comments));
     this._restoreHandlers();
   }
 
@@ -164,10 +169,18 @@ export default class PopupView extends AbstractStatefulView{
     return createPopupTemplate(this._state);
   }
 
-  #escButtonHandler = (evt)=> {
+  #keyButtonHandler = (evt)=> {
+    evt.preventDefault();
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       this.#closePopupHandler(evt);
-      document.removeEventListener('keydown', this.#escButtonHandler);
+      document.removeEventListener('keydown', this.#keyButtonHandler);
+    }
+    if(evt.key === 'Control' || evt.key === 'Meta'){
+      this.#deleteComment(
+        UserAction.COMMENTS_UPDATE,
+        UpdateType.MINOR,
+        PopupView.parseStateToFilm(this._state),
+      );
     }
   };
 
@@ -187,18 +200,49 @@ export default class PopupView extends AbstractStatefulView{
     this.element.querySelector('.film-details__emoji-list').scrollIntoView();
   };
 
-  static parseFilmToState(task, comments) {
+  #deleteCommentHandler = (evt) => {
+    evt.preventDefault();
+    if (evt.target.tagName !== 'BUTTON') {
+      return;
+    }
+    const updateComments = this._state.comments.filter((element) => element.id !== Number(evt.target.dataset.id));
+    const previousComment = evt.target.parentElement.parentElement.parentElement.previousElementSibling;
+    this.updateElement({
+      comments: updateComments,
+    });
+    this.#rerenderPopup();
+    if(previousComment !== null){
+      this.element.querySelector(`#${previousComment.id}`).scrollIntoView();
+    }else{
+      this.element.querySelector('.film-details__comments-list').scrollIntoView();
+    }
+    this.#deleteComment(PopupView.parseStateToFilm({...this._state}));
+  };
+
+  static parseFilmAndCommentsToState(film, comments) {
     return {
-      ...task,
+      ...film,
       comments,
-      emoji: null
+      emoji: null,
+      text: null,
     };
   }
 
+  static parseStateToFilm(state){
+    const comments = state.comments;
+    delete state.emoji;
+    delete state.text;
+    const film = state;
+    film.comments = [];
+    comments.forEach((element) => film.comments.push(element.id));
+    return film;
+  }
+
   _restoreHandlers() {
-    document.addEventListener('keydown', this.#escButtonHandler);
+    document.addEventListener('keydown', this.#keyButtonHandler);
     this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#closePopupHandler);
     this.element.querySelector('.film-details__emoji-list').addEventListener('click', this.#emojiHandler);
+    this.element.querySelector('.film-details__comments-list').addEventListener('click', this.#deleteCommentHandler);
   }
 
 }

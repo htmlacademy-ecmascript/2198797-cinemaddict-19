@@ -2,9 +2,9 @@ import {FilterType} from '../const';
 
 const filter = {
   [FilterType.ALL]: (films) => films,
-  [FilterType.WATCHLIST]: (films, userToFilmMap) => films.filter((film) => userToFilmMap.get(film.id).isWhantToWatch),
-  [FilterType.HISTORY]: (films, userToFilmMap) => films.filter((film) => userToFilmMap.get(film.id).isWatched),
-  [FilterType.FAVORITES]: (films, userToFilmMap) => films.filter((film) => userToFilmMap.get(film.id).isFavorite),
+  [FilterType.WATCHLIST]: (films) => films.filter((film) => film.userDetails.isWhantToWatch),
+  [FilterType.HISTORY]: (films) => films.filter((film) => film.userDetails.isWatched),
+  [FilterType.FAVORITES]: (films) => films.filter((film) => film.userDetails.isFavorite),
 };
 
 export {filter};

@@ -48,6 +48,7 @@ export const SortType = {
 export const UserAction = {
   UPDATE_FILM_DETAILS: 'UPDATE_FILM_DETAILS',
   UPSATE_SORT_VIEW: 'UPDATE_SORT_VIEW',
+  DELETE_COMMENT: 'DELETE_COMMENT'
 };
 
 export const UpdateType = {

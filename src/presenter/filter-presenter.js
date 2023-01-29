@@ -42,9 +42,9 @@ export default class FilterPresenter{
 
   #getFilterCounters(){
     return {
-      watchedCounter: filter[FilterType.WATCHLIST](this.#filmsModel.films, this.#filmsModel.userToFilmMap).length,
-      historyCounter: filter[FilterType.HISTORY](this.#filmsModel.films, this.#filmsModel.userToFilmMap).length,
-      favoritesCounter: filter[FilterType.FAVORITES](this.#filmsModel.films, this.#filmsModel.userToFilmMap).length,
+      watchedCounter: filter[FilterType.WATCHLIST](this.#filmsModel.films).length,
+      historyCounter: filter[FilterType.HISTORY](this.#filmsModel.films).length,
+      favoritesCounter: filter[FilterType.FAVORITES](this.#filmsModel.films).length,
     };
   }
 

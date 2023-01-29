@@ -20,20 +20,18 @@ export default class FilmPresenter{
   }
 
 
-  init(film, dataMap) {
+  init(film) {
 
     this.#film = film;
-    this.#dataMap = dataMap;
 
     const prevFilmCardView = this.#filmCardView;
 
     this.#filmCardView = new FilmCardView({
       film: this.#film,
-      dataMap: this.#dataMap,
       onFilmPopup: ()=> {
         this.#openPopup.call(this);
       },
-      onFilmControlButton: this.#updateMap,
+      onFilmControlButton: this.#updateUserDetails,
     });
 
     if(prevFilmCardView === null){
@@ -53,26 +51,26 @@ export default class FilmPresenter{
   }
 
   #openPopup(){
-    this.#openPopupHendler(this.#film, this.#dataMap);
+    this.#openPopupHendler(this.#film);
   }
 
-  #updateMap = (element) => {
+  #updateUserDetails = (element) => {
     switch(element){
       case FilterType.WATCHLIST:
-        this.#dataMap.isWhantToWatch = Math.abs(this.#dataMap.isWhantToWatch - 1);
+        this.#film.userDetails.isWhantToWatch = !this.#film.userDetails.isWhantToWatch;
         break;
       case FilterType.HISTORY:
-        this.#dataMap.isWatched = Math.abs(this.#dataMap.isWatched - 1);
+        this.#film.userDetails.isWatched = !this.#film.userDetails.isWatched;
         break;
       case FilterType.FAVORITES:
-        this.#dataMap.isFavorite = Math.abs(this.#dataMap.isFavorite - 1);
+        this.#film.userDetails.isFavorite = !this.#film.userDetails.isFavorite;
         break;
     }
 
     this.#updateUserToFilmMapHandler(
       UserAction.UPDATE_FILM_DETAILS,
       UpdateType.PATCH,
-      {film: this.#film, dataMap: this.#dataMap});
+      this.#film);
   };
 
   destroy() {
