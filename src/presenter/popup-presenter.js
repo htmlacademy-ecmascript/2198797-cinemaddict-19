@@ -85,7 +85,6 @@ export default class PopupPresenter{
   };
 
   #addNewComment = (update) => {
-    console.log(update);
     this.#submitNewComment(
       UserAction.ADD_COMMENT,
       UpdateType.PATCH,

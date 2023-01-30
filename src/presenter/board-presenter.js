@@ -184,7 +184,7 @@ export default class BoardPresenter {
         break;
       case UserAction.ADD_COMMENT:
         this.#filmsModel.addComment(updateType, update);
-      break;
+        break;
     }
   };
 
