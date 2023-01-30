@@ -1,12 +1,13 @@
 import FilmDetailsControlView from '../view/film-details-control-view.js';
 import PopupView from '../view/popup-view.js';
 import {render, RenderPosition} from '../framework/render.js';
-import {FilterType} from '../const.js';
+import {FilterType, UserAction, UpdateType} from '../const.js';
 
 export default class PopupPresenter{
-  #updateUserToFilmMapHandler = null;
+  #updateFilmDetails = null;
   #popupView = null;
   #closePopupHandler = null;
+  #submitNewComment = null;
 
   #film = null;
   #comments = null;
@@ -14,18 +15,17 @@ export default class PopupPresenter{
   #filmDetailsControlView = null;
   #siteBodyElement = null;
 
-  constructor({siteBodyElement, updateUserToFilmMapHandler, closePopupHandler}) {
+  constructor({siteBodyElement, updateFilmDetails, closePopupHandler, submitNewComment}) {
     this.#siteBodyElement = siteBodyElement;
-    this.#updateUserToFilmMapHandler = updateUserToFilmMapHandler;
+    this.#updateFilmDetails = updateFilmDetails;
     this.#closePopupHandler = closePopupHandler;
+    this.#submitNewComment = submitNewComment;
   }
 
 
-  init(film, dataMap, comments) {
+  init(film, comments) {
     this.#film = film;
     this.#comments = comments;
-    this.#dataMap = dataMap;
-
     this.#siteBodyElement.classList.add('hide-overflow');
 
     const closePopup = () => {
@@ -36,11 +36,11 @@ export default class PopupPresenter{
     this.#popupView = new PopupView({
       film: this.#film,
       comments: this.#comments,
-      dataMap: this.#dataMap,
       onClosePopup: () =>{
         closePopup.call(this);
       },
-      onFilmControlButton: this.#updateMap,
+      deleteComment: this.#deleteComment,
+      addNewComment: this.#addNewComment,
       rerenderPopup: this.#rerenderPopup,
     });
     render(this.#popupView, this.#siteBodyElement);
@@ -50,27 +50,49 @@ export default class PopupPresenter{
   #renderFilmDetailsControlElement(){
     const containerForControlView = this.#popupView.element.querySelector('.film-details__top-container');
     this.#filmDetailsControlView = new FilmDetailsControlView({
-      dataMap:this.#dataMap,
-      onFilmControlButton: this.#updateMap});
+      film:this.#film,
+      onFilmControlButton: this.#updateUserDetails});
     render(this.#filmDetailsControlView, containerForControlView, RenderPosition.BEFOREEND);
   }
 
-  #updateMap = (element) => {
+  #updateUserDetails = (element) => {
     switch(element){
       case FilterType.WATCHLIST:
-        this.#dataMap.isWhantToWatch = Math.abs(this.#dataMap.isWhantToWatch - 1);
+        this.#film.userDetails.isWhantToWatch = !this.#film.userDetails.isWhantToWatch;
         break;
       case FilterType.HISTORY:
-        this.#dataMap.isWatched = Math.abs(this.#dataMap.isWatched - 1);
+        this.#film.userDetails.isWatched = !this.#film.userDetails.isWatched;
         break;
       case FilterType.FAVORITES:
-        this.#dataMap.isFavorite = Math.abs(this.#dataMap.isFavorite - 1);
+        this.#film.userDetails.isFavorite = !this.#film.userDetails.isFavorite;
         break;
     }
-    this.#updateUserToFilmMapHandler(this.#film, this.#dataMap);
+    this.#updateFilmDetails(
+      UserAction.UPDATE_FILM_DETAILS,
+      UpdateType.PATCH,
+      this.#film);
   };
 
   #rerenderPopup = () => {
     this.#renderFilmDetailsControlElement();
   };
+
+  #deleteComment = (update) => {
+    this.#updateFilmDetails(
+      UserAction.UPDATE_FILM_DETAILS,
+      UpdateType.PATCH,
+      update);
+  };
+
+  #addNewComment = (update) => {
+    this.#submitNewComment(
+      UserAction.ADD_COMMENT,
+      UpdateType.PATCH,
+      {
+        comment: update,
+        id: this.#film.id,
+      }
+    );
+  };
+
 }

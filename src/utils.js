@@ -76,7 +76,6 @@ function sortByRating(filmA, filmB) {
   if (filmA.rating > filmB.rating) {
     return 1;
   }
-  // a must be equal to b
   return 0;
 }
 

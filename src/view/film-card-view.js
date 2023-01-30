@@ -3,7 +3,7 @@ import {humanizeDate} from '../utils.js';
 
 const ACTIVATE_ELEMENT_CLASS = 'film-card__controls-item--active';
 
-function createFilmCardTemplate(film, dataMap) {
+function createFilmCardTemplate(film) {
   return (`
   <article class="film-card">
   <a class="film-card__link">
@@ -19,9 +19,9 @@ function createFilmCardTemplate(film, dataMap) {
     <span class="film-card__comments">${film.comments.length}</span>
   </a>
   <div class="film-card__controls">
-    <button class="film-card__controls-item film-card__controls-item--add-to-watchlist ${ACTIVATE_ELEMENT_CLASS.repeat(dataMap.isWhantToWatch)}" type="button" id="watchlist">Add to watchlist</button>
-    <button class="film-card__controls-item film-card__controls-item--mark-as-watched ${ACTIVATE_ELEMENT_CLASS.repeat(dataMap.isWatched)}" type="button" id="watched">Mark as watched</button>
-    <button class="film-card__controls-item film-card__controls-item--favorite ${ACTIVATE_ELEMENT_CLASS.repeat(dataMap.isFavorite)}" type="button" id="favorite">Mark as favorite</button>
+    <button class="film-card__controls-item film-card__controls-item--add-to-watchlist ${film.userDetails.isWhantToWatch ? ACTIVATE_ELEMENT_CLASS : ''}" type="button" id="watchlist">Add to watchlist</button>
+    <button class="film-card__controls-item film-card__controls-item--mark-as-watched ${film.userDetails.isWatched ? ACTIVATE_ELEMENT_CLASS : ''}" type="button" id="watched">Mark as watched</button>
+    <button class="film-card__controls-item film-card__controls-item--favorite ${film.userDetails.isFavorite ? ACTIVATE_ELEMENT_CLASS : ''}" type="button" id="favorite">Mark as favorite</button>
   </div>
 </article>
   `);
@@ -29,14 +29,12 @@ function createFilmCardTemplate(film, dataMap) {
 
 export default class FilmCardView extends AbstractView{
   #film = null;
-  #dataMap = null;
   #handlerFilmPopup = null;
   #handlerFilmControlButton = null;
 
-  constructor({film, dataMap, onFilmPopup, onFilmControlButton}) {
+  constructor({film, onFilmPopup, onFilmControlButton}) {
     super();
     this.#film = film;
-    this.#dataMap = dataMap;
     this.#handlerFilmPopup = onFilmPopup;
     this.#handlerFilmControlButton = onFilmControlButton;
 
@@ -45,7 +43,7 @@ export default class FilmCardView extends AbstractView{
   }
 
   get template() {
-    return createFilmCardTemplate(this.#film, this.#dataMap);
+    return createFilmCardTemplate(this.#film);
   }
 
   #filmPopupHandler = (evt) => {

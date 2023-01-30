@@ -1,3 +1,4 @@
+import he from 'he';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {humanizeDate, humanizeCommentDate} from '../utils.js';
 
@@ -10,7 +11,7 @@ const EMOJIS = {
 
 function createCommentListTemplate(comment) {
   return (`
-  <li class="film-details__comment">
+  <li class="film-details__comment" id="comment${comment.id}">
   <span class="film-details__comment-emoji">
     <img src="./images/emoji/${comment.emoji}" width="55" height="55" alt="emoji-puke">
   </span>
@@ -19,7 +20,7 @@ function createCommentListTemplate(comment) {
     <p class="film-details__comment-info">
       <span class="film-details__comment-author">${comment.author}</span>
       <span class="film-details__comment-day">${humanizeCommentDate(comment.date)}</span>
-      <button class="film-details__comment-delete">Delete</button>
+      <button class="film-details__comment-delete"  data-id="${comment.id}">Delete</button>
     </p>
   </div>
 </li>
@@ -143,19 +144,20 @@ function createPopupTemplate(film) {
 }
 
 export default class PopupView extends AbstractStatefulView{
-  #film = null;
-  #comments = null;
   #handlerClosePopup = null;
   #rerenderPopup = null;
+  #deleteComment = null;
+  #addNewComment = null;
+  #preveousKeyDown = null;
 
 
-  constructor({film, comments, onClosePopup, rerenderPopup}) {
+  constructor({film, comments, onClosePopup, rerenderPopup, deleteComment, addNewComment}) {
     super();
-    this.#film = film;
-    this.#comments = comments;
     this.#handlerClosePopup = onClosePopup;
     this.#rerenderPopup = rerenderPopup;
-    this._setState(PopupView.parseFilmToState(film, comments));
+    this.#deleteComment = deleteComment;
+    this.#addNewComment = addNewComment;
+    this._setState(PopupView.parseFilmAndCommentsToState(film, comments));
     this._restoreHandlers();
   }
 
@@ -164,11 +166,22 @@ export default class PopupView extends AbstractStatefulView{
     return createPopupTemplate(this._state);
   }
 
-  #escButtonHandler = (evt)=> {
+  #keyButtonHandler = (evt)=> {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       this.#closePopupHandler(evt);
-      document.removeEventListener('keydown', this.#escButtonHandler);
+      document.removeEventListener('keydown', this.#keyButtonHandler);
     }
+    if((this.#preveousKeyDown === 'Control' || this.#preveousKeyDown === 'Meta') && evt.key === 'Enter'){
+      this._state.text = this.element.querySelector('textarea').value;
+      if(this._state.text === '' || this._state.emoji === null){
+        return;
+      }
+      this.#addNewComment(PopupView.parseStateToComment(this._state));
+      this.element.remove();
+      this.removeElement();
+      this.#handlerClosePopup();
+    }
+    this.#preveousKeyDown = evt.key;
   };
 
   #closePopupHandler = (evt) => {
@@ -187,18 +200,56 @@ export default class PopupView extends AbstractStatefulView{
     this.element.querySelector('.film-details__emoji-list').scrollIntoView();
   };
 
-  static parseFilmToState(task, comments) {
+  #deleteCommentHandler = (evt) => {
+    evt.preventDefault();
+    if (evt.target.tagName !== 'BUTTON') {
+      return;
+    }
+    const updateComments = this._state.comments.filter((element) => element.id !== Number(evt.target.dataset.id));
+    const previousComment = evt.target.parentElement.parentElement.parentElement.previousElementSibling;
+    this.updateElement({
+      comments: updateComments,
+    });
+    this.#rerenderPopup();
+    if(previousComment !== null){
+      this.element.querySelector(`#${previousComment.id}`).scrollIntoView();
+    }else{
+      this.element.querySelector('.film-details__comments-list').scrollIntoView();
+    }
+    this.#deleteComment(PopupView.parseStateToFilm({...this._state}));
+  };
+
+  static parseFilmAndCommentsToState(film, comments) {
     return {
-      ...task,
+      ...film,
       comments,
-      emoji: null
+      emoji: null,
+      text: null,
+    };
+  }
+
+  static parseStateToFilm(state){
+    const comments = state.comments;
+    delete state.emoji;
+    delete state.text;
+    const film = state;
+    film.comments = [];
+    comments.forEach((element) => film.comments.push(element.id));
+    return film;
+  }
+
+  static parseStateToComment(state){
+    return {
+      emoji: state.emoji,
+      text: he.encode(state.text),
     };
   }
 
   _restoreHandlers() {
-    document.addEventListener('keydown', this.#escButtonHandler);
+    document.addEventListener('keydown', this.#keyButtonHandler);
     this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#closePopupHandler);
     this.element.querySelector('.film-details__emoji-list').addEventListener('click', this.#emojiHandler);
+    this.element.querySelector('.film-details__comments-list').addEventListener('click', this.#deleteCommentHandler);
   }
 
 }
