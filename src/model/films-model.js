@@ -9,7 +9,6 @@ export default class FilmsModel extends Observable {
 
   #films = null;
   #comments = null;
-  #userToFilmMap = new Map();
 
   constructor() {
     super();
@@ -30,9 +29,20 @@ export default class FilmsModel extends Observable {
   }
 
   updateFilmDetails(updateType, update){
-    const filmForRrplaceIndex = this.#films.findIndex((element) => element.id === update.id);
-    this.#films[filmForRrplaceIndex] = update;
+    const filmForReplaceIndex = this.#films.findIndex((element) => element.id === update.id);
+    this.#films[filmForReplaceIndex] = update;
     this._notify(updateType, update);
+  }
+
+  addComment(updateType, update){
+
+    const newComment = generateComment();
+    newComment.text = update.comment.text;
+    newComment.emoji = update.comment.emoji;
+    this.#comments.push(newComment);
+    const filmForReplaceIndex = this.#films.findIndex((element) => element.id === update.id);
+    this.#films[filmForReplaceIndex].comments.push(newComment.id);
+    this._notify(updateType, this.#films[filmForReplaceIndex]);
   }
 
 }

@@ -40,6 +40,7 @@ export default class PopupPresenter{
         closePopup.call(this);
       },
       deleteComment: this.#deleteComment,
+      addNewComment: this.#addNewComment,
       rerenderPopup: this.#rerenderPopup,
     });
     render(this.#popupView, this.#siteBodyElement);
@@ -76,11 +77,23 @@ export default class PopupPresenter{
     this.#renderFilmDetailsControlElement();
   };
 
-  #deleteComment = (update)=> {
+  #deleteComment = (update) => {
     this.#updateFilmDetails(
       UserAction.UPDATE_FILM_DETAILS,
       UpdateType.PATCH,
       update);
+  };
+
+  #addNewComment = (update) => {
+    console.log(update);
+    this.#submitNewComment(
+      UserAction.ADD_COMMENT,
+      UpdateType.PATCH,
+      {
+        comment: update,
+        id: this.#film.id,
+      }
+    );
   };
 
 }

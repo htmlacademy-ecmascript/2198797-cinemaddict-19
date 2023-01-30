@@ -1,7 +1,6 @@
-//import { NormalModuleReplacementPlugin } from 'webpack';
+import he from 'he';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {humanizeDate, humanizeCommentDate} from '../utils.js';
-import {UpdateType, UserAction} from '../const.js';
 
 const EMOJIS = {
   'angry': 'angry.png',
@@ -145,21 +144,19 @@ function createPopupTemplate(film) {
 }
 
 export default class PopupView extends AbstractStatefulView{
-  #film = null;
-  #comments = null;
-  #newComment = {};
   #handlerClosePopup = null;
   #rerenderPopup = null;
   #deleteComment = null;
+  #addNewComment = null;
+  #preveousKeyDown = null;
 
 
-  constructor({film, comments, onClosePopup, rerenderPopup, deleteComment}) {
+  constructor({film, comments, onClosePopup, rerenderPopup, deleteComment, addNewComment}) {
     super();
-    this.#film = film;
-    this.#comments = comments;
     this.#handlerClosePopup = onClosePopup;
     this.#rerenderPopup = rerenderPopup;
     this.#deleteComment = deleteComment;
+    this.#addNewComment = addNewComment;
     this._setState(PopupView.parseFilmAndCommentsToState(film, comments));
     this._restoreHandlers();
   }
@@ -170,18 +167,21 @@ export default class PopupView extends AbstractStatefulView{
   }
 
   #keyButtonHandler = (evt)=> {
-    evt.preventDefault();
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       this.#closePopupHandler(evt);
       document.removeEventListener('keydown', this.#keyButtonHandler);
     }
-    if(evt.key === 'Control' || evt.key === 'Meta'){
-      this.#deleteComment(
-        UserAction.COMMENTS_UPDATE,
-        UpdateType.MINOR,
-        PopupView.parseStateToFilm(this._state),
-      );
+    if((this.#preveousKeyDown === 'Control' || this.#preveousKeyDown === 'Meta') && evt.key === 'Enter'){
+      this._state.text = this.element.querySelector('textarea').value;
+      if(this._state.text === '' || this._state.emoji === null){
+        return;
+      }
+      this.#addNewComment(PopupView.parseStateToComment(this._state));
+      this.element.remove();
+      this.removeElement();
+      this.#handlerClosePopup();
     }
+    this.#preveousKeyDown = evt.key;
   };
 
   #closePopupHandler = (evt) => {
@@ -236,6 +236,13 @@ export default class PopupView extends AbstractStatefulView{
     film.comments = [];
     comments.forEach((element) => film.comments.push(element.id));
     return film;
+  }
+
+  static parseStateToComment(state){
+    return {
+      emoji: state.emoji,
+      text: he.encode(state.text),
+    };
   }
 
   _restoreHandlers() {

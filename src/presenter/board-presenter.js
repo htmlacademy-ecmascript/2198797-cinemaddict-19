@@ -182,6 +182,9 @@ export default class BoardPresenter {
         this.#currentSortType = update;
         this.#handleModelEvent(updateType, {});
         break;
+      case UserAction.ADD_COMMENT:
+        this.#filmsModel.addComment(updateType, update);
+      break;
     }
   };
 
