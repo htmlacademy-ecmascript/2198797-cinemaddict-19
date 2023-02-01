@@ -11,7 +11,6 @@ export default class PopupPresenter{
 
   #film = null;
   #comments = null;
-  #dataMap = null;
   #filmDetailsControlView = null;
   #siteBodyElement = null;
 
@@ -26,6 +25,7 @@ export default class PopupPresenter{
   init(film, comments) {
     this.#film = film;
     this.#comments = comments;
+    console.log(comments);
     this.#siteBodyElement.classList.add('hide-overflow');
 
     const closePopup = () => {

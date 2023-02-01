@@ -3,6 +3,7 @@ import FilmsListView from '../view/films-list-view.js';
 import MoviesCounterView from '../view/movies-counter-view';
 import ProfileRatingView from '../view/profile-rating-view.js';
 import EmptyListView from '../view/empty-list-view.js';
+import LoadingView from '../view/loading-view.js';
 import {render, remove} from '../framework/render.js';
 import FilmPresenter from './film-presenter.js';
 import PopupPresenter from './popup-presenter.js';
@@ -29,16 +30,17 @@ export default class BoardPresenter {
   #filterType = null;
 
   #filmsListComponent = new FilmsListView();
+  #loadingComponent = new LoadingView();
   #filmsContainer = this.#filmsListComponent.element.querySelector('.films-list__container');
   #filmsList = this.#filmsListComponent.element.querySelector('.films-list');
   #sortView = null;
   #emptyListView = null;
 
-  #loadedComments = null;
   #userToFilmMap = null;
   #currentSortType = SortType.DEFAULT;
 
   #renderFilmCount = 0;
+  #isLoading = true;
 
 
   constructor({siteBodyElement, siteMainElement, siteHeaderElement, siteFooterElement, filmsModel, filtersModel}) {
@@ -54,9 +56,6 @@ export default class BoardPresenter {
   }
 
   init() {
-    this.#loadedComments = this.#filmsModel.comments;
-    this.#userToFilmMap = this.#filmsModel.userToFilmMap;
-
     this.#renderBoard();
   }
 
@@ -104,11 +103,7 @@ export default class BoardPresenter {
       closePopupHandler: this.#closePopupHandler,
       submitNewComment: this.#handleViewAction,
     });
-    const tmpComments = [];
-    for(let i = 0; i < film.comments.length; i++){
-      tmpComments.push(this.#loadedComments[film.comments[i]]);
-    }
-    this.#popupPresenter.init(film, tmpComments);
+    this.#filmsModel.getComments(film.id).then((value) => this.#popupPresenter.init(film, value));
   };
 
   #closePopupHandler = () => {
@@ -209,6 +204,12 @@ export default class BoardPresenter {
         this.#renderShowMoreButton();
         this.#currentSortType = SortType.DEFAULT;
         this.#sortView.setActiveSortType(SortType.DEFAULT);
+        break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderBoard();
+        break;
     }
   };
 
@@ -222,7 +223,16 @@ export default class BoardPresenter {
     this.#renderFilmCount = newRenderedFilmCount;
   }
 
+  #renderLoading() {
+    render(this.#loadingComponent, this.#filmsList);
+  }
+
   #renderBoard(){
+    render(this.#filmsListComponent, this.#siteMainElement);
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
     this.#renderMenuView();
     this.#renderSortView();
     render(this.#filmsListComponent, this.#siteMainElement);

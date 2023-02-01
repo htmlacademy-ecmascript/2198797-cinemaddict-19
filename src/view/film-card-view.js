@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {humanizeDate} from '../utils.js';
+import {humanizeDate, convertMinutesToHours} from '../utils.js';
 
 const ACTIVATE_ELEMENT_CLASS = 'film-card__controls-item--active';
 
@@ -11,10 +11,10 @@ function createFilmCardTemplate(film) {
     <p class="film-card__rating">${film.rating}</p>
     <p class="film-card__info">
       <span class="film-card__year">${humanizeDate(film.release, 'YYYY')}</span>
-      <span class="film-card__duration">${film.runningTime}</span>
-      <span class="film-card__genre">${film.genre}</span>
+      <span class="film-card__duration">${convertMinutesToHours(film.runningTime)}</span>
+      <span class="film-card__genre">${film.genre[0]}</span>
     </p>
-    <img src="./images/posters/${film.poster}" alt="" class="film-card__poster">
+    <img src="${film.poster}" alt="" class="film-card__poster">
     <p class="film-card__description">${film.description}</p>
     <span class="film-card__comments">${film.comments.length}</span>
   </a>

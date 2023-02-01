@@ -13,7 +13,7 @@ function createCommentListTemplate(comment) {
   return (`
   <li class="film-details__comment" id="comment${comment.id}">
   <span class="film-details__comment-emoji">
-    <img src="./images/emoji/${comment.emoji}" width="55" height="55" alt="emoji-puke">
+    <img src="./images/emoji/${EMOJIS[comment.emotion]}" width="55" height="55" alt="emoji-puke">
   </span>
   <div>
     <p class="film-details__comment-text">${comment.text}</p>
@@ -32,9 +32,9 @@ function createDetailsGenreTemplate(genre) {
 }
 
 function createEmojiListTemplate(file) {
-  return(Object.entries(EMOJIS).map(([emoji, fileName]) => `
-  <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-${emoji}" value="${emoji}" ${file.emoji === fileName ? 'checked' : ''}>
-            <label class="film-details__emoji-label" for="emoji-${emoji}" data-emoji-file=${fileName}>
+  return(Object.entries(EMOJIS).map(([emotion, fileName]) => `
+  <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-${emotion}" value="${emotion}" ${file.emotion === fileName ? 'checked' : ''}>
+            <label class="film-details__emoji-label" for="emoji-${emotion}" data-emoji-file=${fileName}>
               <img src="./images/emoji/${fileName}" width="30" height="30" alt="emoji">
             </label>
   `).join('')
@@ -58,7 +58,7 @@ function createPopupTemplate(film) {
       </div>
       <div class="film-details__info-wrap">
         <div class="film-details__poster">
-          <img class="film-details__poster-img" src="./images/posters/${film.poster}" alt="">
+          <img class="film-details__poster-img" src="${film.poster}" alt="">
 
           <p class="film-details__age">${film.ageRating}</p>
         </div>
@@ -126,7 +126,7 @@ function createPopupTemplate(film) {
         </ul>
 
         <form class="film-details__new-comment" action="" method="get">
-          <div class="film-details__add-emoji-label">${film.emoji ? `<img src="./images/emoji/${film.emoji}" width="60" height="60" >` : ''}</div>
+          <div class="film-details__add-emoji-label">${film.emotion ? `<img src="./images/emoji/${film.emotion}" width="60" height="60" >` : ''}</div>
 
           <label class="film-details__comment-label">
             <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment"></textarea>
@@ -153,6 +153,7 @@ export default class PopupView extends AbstractStatefulView{
 
   constructor({film, comments, onClosePopup, rerenderPopup, deleteComment, addNewComment}) {
     super();
+    console.log(comments);
     this.#handlerClosePopup = onClosePopup;
     this.#rerenderPopup = rerenderPopup;
     this.#deleteComment = deleteComment;
@@ -194,7 +195,7 @@ export default class PopupView extends AbstractStatefulView{
   #emojiHandler = (evt) => {
     evt.preventDefault();
     this.updateElement({
-      emoji: evt.target.parentElement.dataset.emojiFile,
+      emotion: evt.target.parentElement.dataset.emojiFile,
     });
     this.#rerenderPopup();
     this.element.querySelector('.film-details__emoji-list').scrollIntoView();
@@ -223,14 +224,14 @@ export default class PopupView extends AbstractStatefulView{
     return {
       ...film,
       comments,
-      emoji: null,
+      emotion: null,
       text: null,
     };
   }
 
   static parseStateToFilm(state){
     const comments = state.comments;
-    delete state.emoji;
+    delete state.emotion;
     delete state.text;
     const film = state;
     film.comments = [];
@@ -240,7 +241,7 @@ export default class PopupView extends AbstractStatefulView{
 
   static parseStateToComment(state){
     return {
-      emoji: state.emoji,
+      emoji: state.emotion,
       text: he.encode(state.text),
     };
   }
