@@ -4,6 +4,8 @@ import ApiService from './framework/api-service.js';
 const Method = {
   GET: 'GET',
   PUT: 'PUT',
+  DELETE: 'DELETE',
+  POST: 'POST', 
 };
 
 export default class FilmApiService extends ApiService {
@@ -26,11 +28,34 @@ export default class FilmApiService extends ApiService {
       body: JSON.stringify(adaptedFilm),
       headers: new Headers({'Content-Type': 'application/json'}),
     });
-
     const parsedResponse = await ApiService.parseResponse(response);
 
     return parsedResponse;
   }
+
+  async deleteComment(commentId) {
+    const response = await this._load({
+      url: `comments/${commentId}`,
+      method: Method.DELETE,
+      headers: new Headers({'Content-Type': 'application/json'}),
+    });
+
+    return response;
+  }
+
+  async addNewComment(comment, film) {
+    const response = await this._load({
+      url: `comments/${film.id}`,
+      method: Method.POST,
+      body: JSON.stringify(comment),
+      headers: new Headers({'Content-Type': 'application/json'}),
+    });
+    const parsedResponse = await ApiService.parseResponse(response);
+
+    return parsedResponse;
+  }
+
+
 
   #adaptToServer(film){
     const adaptedFilm = {};
@@ -55,8 +80,8 @@ export default class FilmApiService extends ApiService {
     adaptedFilm.user_details = {
       already_watched: film.userDetails.isWatched,
       watchlist: film.userDetails.isWhantToWatch,
-      favorite: film.userDetails.isWhantToWatch,
-      watching_date: film.userDetails. watchingDate,
+      favorite: film.userDetails.isFavorite,
+      watching_date: film.userDetails.watchingDate,
     };
     return adaptedFilm;
   }

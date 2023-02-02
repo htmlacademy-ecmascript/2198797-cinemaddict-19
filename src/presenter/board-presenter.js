@@ -178,7 +178,16 @@ export default class BoardPresenter {
         this.#handleModelEvent(updateType, {});
         break;
       case UserAction.ADD_COMMENT:
+        update.actionType = actionType;
         this.#filmsModel.addComment(updateType, update);
+        break;
+      case UserAction.DELETE_COMMENT:
+        update.actionType = actionType;
+        this.#filmsModel.deleteComment(updateType, update);
+        break;
+      case UserAction.UPDATE_FILM:
+        update.actionType = actionType;
+        this.#filmsModel.updateFilmDetails(updateType, update);
         break;
     }
   };
@@ -188,10 +197,13 @@ export default class BoardPresenter {
       case UpdateType.PATCH:
         this.#filterPresenter.init();
         this.#filmPresentorCollection.find((element) => {
-          if(element.getId() === data.id){
-            element.init(data);
+          if(element.getId() === data.film.id){
+            element.init(data.film);
           }
         });
+        if(this.#popupPresenter !== null ){
+          this.#popupPresenter.updatePopupView(data);
+        }
         break;
       case UpdateType.MINOR:
         this.#clearFilmList();

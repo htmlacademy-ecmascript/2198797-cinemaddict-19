@@ -1,7 +1,7 @@
 import FilmDetailsControlView from '../view/film-details-control-view.js';
 import PopupView from '../view/popup-view.js';
 import {render, RenderPosition} from '../framework/render.js';
-import {FilterType, UserAction, UpdateType} from '../const.js';
+import {FilterType, UserAction, UpdateType, PopupUpdateType} from '../const.js';
 
 export default class PopupPresenter{
   #updateFilmDetails = null;
@@ -25,7 +25,6 @@ export default class PopupPresenter{
   init(film, comments) {
     this.#film = film;
     this.#comments = comments;
-    console.log(comments);
     this.#siteBodyElement.classList.add('hide-overflow');
 
     const closePopup = () => {
@@ -39,12 +38,26 @@ export default class PopupPresenter{
       onClosePopup: () =>{
         closePopup.call(this);
       },
-      deleteComment: this.#deleteComment,
+      updatePopupInfo: this.#updatePopupInfo,
       addNewComment: this.#addNewComment,
-      rerenderPopup: this.#rerenderPopup,
+      rerenderControlView: this.#rerenderControlView,
     });
     render(this.#popupView, this.#siteBodyElement);
     this.#renderFilmDetailsControlElement();
+  }
+
+  updatePopupView(data){
+    switch(data.actionType){
+      case UserAction.DELETE_COMMENT:
+        this.#popupView.deleteComment(data);
+        break;
+      case UserAction.UPDATE_FILM:
+        this.#rerenderControlView();
+        break;
+      case UserAction.ADD_COMMENT:
+        this.#popupView.addComment(data);
+        break;
+    }
   }
 
   #renderFilmDetailsControlElement(){
@@ -68,30 +81,29 @@ export default class PopupPresenter{
         break;
     }
     this.#updateFilmDetails(
-      UserAction.UPDATE_FILM_DETAILS,
+      UserAction.UPDATE_FILM,
       UpdateType.PATCH,
-      this.#film);
+      {film: this.#film});
   };
 
-  #rerenderPopup = () => {
+  #rerenderControlView = () => {
+    this.#filmDetailsControlView.element.remove();
+    this.#filmDetailsControlView.removeElement();
     this.#renderFilmDetailsControlElement();
   };
 
-  #deleteComment = (update) => {
+  #updatePopupInfo = (actionType,update) => {
     this.#updateFilmDetails(
-      UserAction.UPDATE_FILM_DETAILS,
+      actionType,
       UpdateType.PATCH,
       update);
   };
 
-  #addNewComment = (update) => {
+  #addNewComment = (actionType, update) => {
     this.#submitNewComment(
-      UserAction.ADD_COMMENT,
+      actionType,
       UpdateType.PATCH,
-      {
-        comment: update,
-        id: this.#film.id,
-      }
+      update
     );
   };
 

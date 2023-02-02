@@ -70,36 +70,63 @@ export default class FilmsModel extends Observable {
   }
 
   async updateFilmDetails(updateType, update){
-    const filmForReplaceIndex = this.#films.findIndex((element) => element.id === update.id);
-
+    const filmForReplaceIndex = this.#films.findIndex((element) => element.id === update.film.id);
     if (filmForReplaceIndex === -1) {
       throw new Error('Can\'t update unexisting task');
     }
 
     try {
-      const response = await this.#filmApiService.updateFilm(update);
+      const response = await this.#filmApiService.updateFilm(update.film);
       const updatedFilm = this.#adaptToClient(response);
       this.#films = [
         ...this.#films.slice(0, filmForReplaceIndex),
         updatedFilm,
         ...this.#films.slice(filmForReplaceIndex + 1),
       ];
-      this._notify(updateType, updatedFilm);
+      const comments = await this.getComments(updatedFilm.id);
+
+      this._notify(updateType, {
+        film: updatedFilm,
+        comments: comments,
+        actionType: update.actionType,
+      });
 
     } catch(err) {
-      throw new Error('Can\'t update task');
+      throw new Error('Can\'t update film');
     }
   }
 
-  addComment(updateType, update){
+  async addComment(updateType, update){
+    try {
+      const response = await this.#filmApiService.addNewComment(update.newComment,update.film);
+      const updatedFilm = this.#adaptToClient(response.movie);
+      const filmForReplaceIndex = this.#films.findIndex((element) => element.id === updatedFilm.id);
+      this.#films = [
+        ...this.#films.slice(0, filmForReplaceIndex),
+        updatedFilm,
+        ...this.#films.slice(filmForReplaceIndex + 1),
+      ];
+      const comments = await this.getComments(updatedFilm.id);
+      this._notify(updateType, {
+        film: updatedFilm,
+        comments: comments,
+        actionType: update.actionType,
+      });
 
-    /*const newComment = generateComment();
-    newComment.text = update.comment.text;
-    newComment.emoji = update.comment.emoji;
-    this.#comments.push(newComment);
-    const filmForReplaceIndex = this.#films.findIndex((element) => element.id === update.id);
-    this.#films[filmForReplaceIndex].comments.push(newComment.id);
-    this._notify(updateType, this.#films[filmForReplaceIndex]);*/
+    } catch(err) {
+      throw new Error('Can\'t add new comment');
+    }
+  }
+
+  async deleteComment(updateType, update){
+    try {
+      await this.#filmApiService.deleteComment(update.commentId);
+      this.updateFilmDetails(updateType, update);
+
+    } catch(err) {
+      throw new Error('Can\'t delet comment');
+    }
+
   }
 
 }
