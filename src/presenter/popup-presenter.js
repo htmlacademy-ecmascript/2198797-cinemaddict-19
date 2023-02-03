@@ -25,7 +25,6 @@ export default class PopupPresenter{
 
   #film = null;
   #comments = null;
-  
   #siteBodyElement = null;
 
   constructor({siteBodyElement, updateFilmDetails, closePopupHandler}) {
