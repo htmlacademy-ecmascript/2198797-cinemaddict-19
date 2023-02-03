@@ -29,12 +29,6 @@ export default class FilmDetailsControlView extends AbstractView {
     if(evt.target.tagName !== 'BUTTON'){
       return;
     }
-    const controlElement = this.element.querySelector(`#${evt.target.id}`);
-    if(controlElement.classList.contains(ACTIVATE_ELEMENT_CLASS)){
-      controlElement.classList.remove(ACTIVATE_ELEMENT_CLASS);
-    }else{
-      controlElement.classList.add(ACTIVATE_ELEMENT_CLASS);
-    }
     this.#handlerFilmControlButton(evt.target.id);
   };
 

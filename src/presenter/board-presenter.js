@@ -12,10 +12,22 @@ import ShowMoreButtonPresenter from './show-more-button-presenter.js';
 import { SortType, UserAction, UpdateType} from '../const.js';
 import {sortByDate, sortByRating} from '../utils.js';
 import {filter} from '../utils/filter.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 
 const FILMS_NUMBER_PER_STEP = 5;
 
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
+
 export default class BoardPresenter {
+
+  #uiBlocker = new UiBlocker({
+    lowerLimit: TimeLimit.LOWER_LIMIT,
+    upperLimit: TimeLimit.UPPER_LIMIT
+  });
+
   #siteBodyElement = null;
   #siteMainElement = null;
   #siteHeaderElement = null;
@@ -101,7 +113,6 @@ export default class BoardPresenter {
       siteBodyElement: this.#siteBodyElement,
       updateFilmDetails: this.#handleViewAction,
       closePopupHandler: this.#closePopupHandler,
-      submitNewComment: this.#handleViewAction,
     });
     this.#filmsModel.getComments(film.id).then((value) => this.#popupPresenter.init(film, value));
   };
@@ -165,10 +176,22 @@ export default class BoardPresenter {
     this.#sortView.setActiveSortType(SortType.DEFAULT);
   };
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
     switch (actionType) {
       case UserAction.UPDATE_FILM_DETAILS:
-        this.#filmsModel.updateFilmDetails(updateType, update);
+        try{
+          await this.#filmsModel.updateFilmDetails(updateType, update);
+        } catch(err) {
+          if(this.#popupPresenter !== null){
+            this.#popupPresenter.setAborting(UserAction.UPDATE_FILM_DETAILS);
+          }
+          this.#filmPresentorCollection.find((element) => {
+            if(element.getId() === update.film.id){
+              element.setAborting();
+            }
+          });
+        }
         break;
       case UserAction.UPDATE_SORT_VIEW:
         if (this.#currentSortType === update) {
@@ -178,9 +201,23 @@ export default class BoardPresenter {
         this.#handleModelEvent(updateType, {});
         break;
       case UserAction.ADD_COMMENT:
-        this.#filmsModel.addComment(updateType, update);
+        update.actionType = actionType;
+        try{
+          await this.#filmsModel.addComment(updateType, update);
+        }catch(err){
+          this.#popupPresenter.setAborting(UserAction.ADD_COMMENT);
+        }
+        break;
+      case UserAction.DELETE_COMMENT:
+        update.actionType = actionType;
+        try{
+          await this.#filmsModel.deleteComment(updateType, update);
+        }catch(err){
+          this.#popupPresenter.setAborting(UserAction.DELETE_COMMENT);
+        }
         break;
     }
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
@@ -188,10 +225,13 @@ export default class BoardPresenter {
       case UpdateType.PATCH:
         this.#filterPresenter.init();
         this.#filmPresentorCollection.find((element) => {
-          if(element.getId() === data.id){
-            element.init(data);
+          if(element.getId() === data.film.id){
+            element.init(data.film);
           }
         });
+        if(this.#popupPresenter !== null ){
+          this.#popupPresenter.updatePopupView(data);
+        }
         break;
       case UpdateType.MINOR:
         this.#clearFilmList();

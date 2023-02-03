@@ -70,8 +70,12 @@ export default class FilmPresenter{
     this.#updateUserToFilmMapHandler(
       UserAction.UPDATE_FILM_DETAILS,
       UpdateType.PATCH,
-      this.#film);
+      {film: this.#film});
   };
+
+  setAborting(){
+    this.#filmCardView.shake();
+  }
 
   destroy() {
     remove(this.#filmCardView);
