@@ -114,7 +114,8 @@ export default class FilmsModel extends Observable {
       });
 
     } catch(err) {
-      throw new Error('Can\'t add new comment');
+      throw new Error('Can\'t add comment');
+      //this._notify(UpdateType.NO_UPDATE, 'addNew');
     }
   }
 
@@ -124,7 +125,8 @@ export default class FilmsModel extends Observable {
       this.updateFilmDetails(updateType, update);
 
     } catch(err) {
-      throw new Error('Can\'t delet comment');
+      throw new Error('Can\'t delete comment');
+      //this._notify(UpdateType.NO_UPDATE, 'delete');
     }
 
   }

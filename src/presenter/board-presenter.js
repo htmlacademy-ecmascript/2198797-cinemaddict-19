@@ -165,10 +165,14 @@ export default class BoardPresenter {
     this.#sortView.setActiveSortType(SortType.DEFAULT);
   };
 
-  #handleViewAction = (actionType, updateType, update) => {
+  #handleViewAction = async (actionType, updateType, update) => {
     switch (actionType) {
       case UserAction.UPDATE_FILM_DETAILS:
-        this.#filmsModel.updateFilmDetails(updateType, update);
+        try{
+          await this.#filmsModel.updateFilmDetails(updateType, update);
+        } catch(err) {
+          console.log(err);
+        }
         break;
       case UserAction.UPDATE_SORT_VIEW:
         if (this.#currentSortType === update) {
@@ -178,16 +182,30 @@ export default class BoardPresenter {
         this.#handleModelEvent(updateType, {});
         break;
       case UserAction.ADD_COMMENT:
+        this.#popupPresenter.setAddingComment();
         update.actionType = actionType;
-        this.#filmsModel.addComment(updateType, update);
+        try{
+          await this.#filmsModel.addComment(updateType, update);
+        }catch(err){
+          this.#popupPresenter.setAborting();
+        }
         break;
       case UserAction.DELETE_COMMENT:
+        this.#popupPresenter.setDeleting();
         update.actionType = actionType;
-        this.#filmsModel.deleteComment(updateType, update);
+        try{
+          await this.#filmsModel.deleteComment(updateType, update);
+        }catch(err){
+          this.#popupPresenter.setAborting();
+        }
         break;
       case UserAction.UPDATE_FILM:
         update.actionType = actionType;
-        this.#filmsModel.updateFilmDetails(updateType, update);
+        try{
+          await this.#filmsModel.updateFilmDetails(updateType, update);
+        }catch(err){
+          this.#popupPresenter.setAborting();
+        }
         break;
     }
   };

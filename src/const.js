@@ -28,5 +28,6 @@ export const UpdateType = {
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
   INIT: 'INIT',
+  NO_UPDATE: 'NO_UPDATE',
 };
 

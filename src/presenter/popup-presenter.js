@@ -1,7 +1,7 @@
 import FilmDetailsControlView from '../view/film-details-control-view.js';
 import PopupView from '../view/popup-view.js';
 import {render, RenderPosition} from '../framework/render.js';
-import {FilterType, UserAction, UpdateType, PopupUpdateType} from '../const.js';
+import {FilterType, UserAction, UpdateType} from '../const.js';
 
 export default class PopupPresenter{
   #updateFilmDetails = null;
@@ -49,15 +49,53 @@ export default class PopupPresenter{
   updatePopupView(data){
     switch(data.actionType){
       case UserAction.DELETE_COMMENT:
-        this.#popupView.deleteComment(data);
+        this.#popupView.updateElement({
+          comments: data.comments,
+          isDisabled: false,
+        });
+        this.#rerenderControlView();
+        this.#popupView.scrollToViewDelete();
         break;
       case UserAction.UPDATE_FILM:
         this.#rerenderControlView();
         break;
       case UserAction.ADD_COMMENT:
-        this.#popupView.addComment(data);
+        this.#popupView.updateElement({
+          comments: data.comments,
+          isDisabled: false,
+        });
+        this.#rerenderControlView();
+        this.#popupView.scrollToViewForma();
         break;
     }
+  }
+
+
+  setDeleting() {
+    this.#popupView.updateElement({
+      isDisabled: true,
+    });
+    this.#rerenderControlView();
+    this.#popupView.scrollToViewDelete();
+  }
+
+  setAddingComment() {
+    this.#popupView.updateElement({
+      isDisabled: true,
+    });
+    this.#rerenderControlView();
+    this.#popupView.scrollToViewForma();
+  }
+
+  setAborting(){
+    const resetState = () => {
+      this.#popupView.updateElement({
+        isDisabled: false,
+      });
+      this.#rerenderControlView();
+    };
+    
+    this.#popupView.shake(resetState);
   }
 
   #renderFilmDetailsControlElement(){
