@@ -101,7 +101,6 @@ export default class BoardPresenter {
       siteBodyElement: this.#siteBodyElement,
       updateFilmDetails: this.#handleViewAction,
       closePopupHandler: this.#closePopupHandler,
-      submitNewComment: this.#handleViewAction,
     });
     this.#filmsModel.getComments(film.id).then((value) => this.#popupPresenter.init(film, value));
   };
@@ -171,7 +170,14 @@ export default class BoardPresenter {
         try{
           await this.#filmsModel.updateFilmDetails(updateType, update);
         } catch(err) {
-          console.log(err);
+          if(this.#popupPresenter !== null){
+            this.#popupPresenter.setAborting(UserAction.UPDATE_FILM_DETAILS);
+          }
+          this.#filmPresentorCollection.find((element) => {
+            if(element.getId() === update.film.id){
+              element.setAborting();
+            }
+          });
         }
         break;
       case UserAction.UPDATE_SORT_VIEW:
@@ -182,29 +188,19 @@ export default class BoardPresenter {
         this.#handleModelEvent(updateType, {});
         break;
       case UserAction.ADD_COMMENT:
-        this.#popupPresenter.setAddingComment();
         update.actionType = actionType;
         try{
           await this.#filmsModel.addComment(updateType, update);
         }catch(err){
-          this.#popupPresenter.setAborting();
+          this.#popupPresenter.setAborting(UserAction.ADD_COMMENT);
         }
         break;
       case UserAction.DELETE_COMMENT:
-        this.#popupPresenter.setDeleting();
         update.actionType = actionType;
         try{
           await this.#filmsModel.deleteComment(updateType, update);
         }catch(err){
-          this.#popupPresenter.setAborting();
-        }
-        break;
-      case UserAction.UPDATE_FILM:
-        update.actionType = actionType;
-        try{
-          await this.#filmsModel.updateFilmDetails(updateType, update);
-        }catch(err){
-          this.#popupPresenter.setAborting();
+          this.#popupPresenter.setAborting(UserAction.DELETE_COMMENT);
         }
         break;
     }

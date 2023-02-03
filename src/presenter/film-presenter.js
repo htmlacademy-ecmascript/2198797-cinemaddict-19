@@ -73,6 +73,10 @@ export default class FilmPresenter{
       {film: this.#film});
   };
 
+  setAborting(){
+    this.#filmCardView.shake();
+  }
+
   destroy() {
     remove(this.#filmCardView);
   }

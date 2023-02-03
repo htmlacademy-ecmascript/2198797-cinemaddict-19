@@ -1,5 +1,8 @@
 import FilmDetailsControlView from '../view/film-details-control-view.js';
 import PopupView from '../view/popup-view.js';
+import CommentView from '../view/comment-view.js';
+import NewCommentView from '../view/new-comment-view.js';
+import CommentsCounterView from '../view/comments-counter-view.js';
 import {render, RenderPosition} from '../framework/render.js';
 import {FilterType, UserAction, UpdateType} from '../const.js';
 
@@ -7,18 +10,28 @@ export default class PopupPresenter{
   #updateFilmDetails = null;
   #popupView = null;
   #closePopupHandler = null;
-  #submitNewComment = null;
+
+  #commentsViewCollection = new Map();
+  #containerForCommentsView = null;
+  #currentDeletingComment = null;
+
+  #newCommentViewForm = null;
+  #containerForNewCommentForm = null;
+
+  #commentsCounterView = null;
+
+  #filmDetailsControlView = null;
+
 
   #film = null;
   #comments = null;
-  #filmDetailsControlView = null;
+  
   #siteBodyElement = null;
 
-  constructor({siteBodyElement, updateFilmDetails, closePopupHandler, submitNewComment}) {
+  constructor({siteBodyElement, updateFilmDetails, closePopupHandler}) {
     this.#siteBodyElement = siteBodyElement;
     this.#updateFilmDetails = updateFilmDetails;
     this.#closePopupHandler = closePopupHandler;
-    this.#submitNewComment = submitNewComment;
   }
 
 
@@ -34,68 +47,77 @@ export default class PopupPresenter{
 
     this.#popupView = new PopupView({
       film: this.#film,
-      comments: this.#comments,
       onClosePopup: () =>{
         closePopup.call(this);
       },
-      updatePopupInfo: this.#updatePopupInfo,
-      addNewComment: this.#addNewComment,
-      rerenderControlView: this.#rerenderControlView,
     });
     render(this.#popupView, this.#siteBodyElement);
+
+    this.#containerForCommentsView = this.#popupView.element.querySelector('.film-details__comments-list');
+    this.#containerForNewCommentForm = this.#popupView.element.querySelector('.film-details__comments-wrap');
+
     this.#renderFilmDetailsControlElement();
+    this.#renderCommentsCounter();
+    this.#renderComments();
+    this.#renderNewCommentForm();
   }
 
+
   updatePopupView(data){
+    this.#film = data.film;
+    this.#comments = data.comments;
     switch(data.actionType){
       case UserAction.DELETE_COMMENT:
-        this.#popupView.updateElement({
-          comments: data.comments,
-          isDisabled: false,
-        });
-        this.#rerenderControlView();
-        this.#popupView.scrollToViewDelete();
+        this.#rerenderCommentsCounter();
+        this.#commentsViewCollection.get(this.#currentDeletingComment).element.remove();
+        this.#commentsViewCollection.get(this.#currentDeletingComment).removeElement();
+        this.#currentDeletingComment = null;
         break;
-      case UserAction.UPDATE_FILM:
-        this.#rerenderControlView();
-        break;
+
       case UserAction.ADD_COMMENT:
-        this.#popupView.updateElement({
-          comments: data.comments,
+        this.#commentsViewCollection.forEach((comment) => {
+          comment.element.remove();
+          comment.removeElement();
+        });
+        this.#rerenderCommentsCounter();
+        this.#renderComments();
+        this.#newCommentViewForm.updateElement({
           isDisabled: false,
         });
+        break;
+
+      default:
         this.#rerenderControlView();
-        this.#popupView.scrollToViewForma();
         break;
     }
   }
 
-
-  setDeleting() {
-    this.#popupView.updateElement({
-      isDisabled: true,
-    });
-    this.#rerenderControlView();
-    this.#popupView.scrollToViewDelete();
-  }
-
-  setAddingComment() {
-    this.#popupView.updateElement({
-      isDisabled: true,
-    });
-    this.#rerenderControlView();
-    this.#popupView.scrollToViewForma();
-  }
-
-  setAborting(){
-    const resetState = () => {
-      this.#popupView.updateElement({
+  setAborting(data){
+    const resetDeleteState = () => {
+      this.#commentsViewCollection.get(this.#currentDeletingComment).updateElement({
         isDisabled: false,
+        isDeleting: false
       });
-      this.#rerenderControlView();
     };
-    
-    this.#popupView.shake(resetState);
+
+    const resetNewCommentState = () => {
+      this.#newCommentViewForm.updateElement({
+        isDisabled: false,
+        isDeleting: false
+      });
+    };
+
+    switch(data){
+      case UserAction.DELETE_COMMENT:
+        this.#commentsViewCollection.get(this.#currentDeletingComment).shake(resetDeleteState);
+        break;
+      case UserAction.ADD_COMMENT:
+        this.#newCommentViewForm.shake(resetNewCommentState);
+        break;
+      default:
+        this.#filmDetailsControlView.shake();
+        break;
+    }
   }
 
   #renderFilmDetailsControlElement(){
@@ -105,6 +127,49 @@ export default class PopupPresenter{
       onFilmControlButton: this.#updateUserDetails});
     render(this.#filmDetailsControlView, containerForControlView, RenderPosition.BEFOREEND);
   }
+
+  #rerenderControlView = () => {
+    this.#filmDetailsControlView.element.remove();
+    this.#filmDetailsControlView.removeElement();
+    this.#renderFilmDetailsControlElement();
+  };
+
+  #renderNewCommentForm(){
+    this.#newCommentViewForm = new NewCommentView({
+      updatePopupInfo: this.#updatePopupInfo
+    });
+    render(this.#newCommentViewForm, this.#containerForNewCommentForm, RenderPosition.BEFOREEND);
+  }
+
+  #renderComment(comment){
+    const commentView = new CommentView({
+      comment: comment,
+      updatePopupInfo: this.#updatePopupInfo
+    });
+    this.#commentsViewCollection.set(
+      comment.id,
+      commentView,
+    );
+    render(commentView, this.#containerForCommentsView, RenderPosition.BEFOREEND);
+  }
+
+  #renderComments(){
+    this.#comments.forEach((comment) => this.#renderComment(comment));
+  }
+
+  #renderCommentsCounter(){
+    this.#commentsCounterView = new CommentsCounterView({
+      commentsCounter: this.#comments.length,
+    });
+    render(this.#commentsCounterView, this.#containerForNewCommentForm, RenderPosition.AFTERBEGIN);
+  }
+
+  #rerenderCommentsCounter(){
+    this.#commentsCounterView.element.remove();
+    this.#commentsCounterView.removeElement();
+    this.#renderCommentsCounter();
+  }
+
 
   #updateUserDetails = (element) => {
     switch(element){
@@ -119,29 +184,41 @@ export default class PopupPresenter{
         break;
     }
     this.#updateFilmDetails(
-      UserAction.UPDATE_FILM,
+      UserAction.UPDATE_FILM_DETAILS,
       UpdateType.PATCH,
       {film: this.#film});
   };
 
-  #rerenderControlView = () => {
-    this.#filmDetailsControlView.element.remove();
-    this.#filmDetailsControlView.removeElement();
-    this.#renderFilmDetailsControlElement();
-  };
-
   #updatePopupInfo = (actionType,update) => {
+    let data = null;
+    switch(actionType){
+      case UserAction.DELETE_COMMENT:
+        this.#currentDeletingComment = update.id;
+        this.#commentsViewCollection.get(update.id).updateElement(
+          {
+            isDisabled: true,
+            isDeleting: true
+          }
+        );
+        data = {
+          film: this.#film,
+          commentId: update.id
+        };
+        break;
+      case UserAction.ADD_COMMENT:
+        this.#newCommentViewForm.updateElement({
+          isDisabled: true,
+        });
+        data = {
+          film: this.#film,
+          newComment: update
+        };
+        break;
+    }
     this.#updateFilmDetails(
       actionType,
       UpdateType.PATCH,
-      update);
-  };
-
-  #addNewComment = (actionType, update) => {
-    this.#submitNewComment(
-      actionType,
-      UpdateType.PATCH,
-      update
+      data,
     );
   };
 

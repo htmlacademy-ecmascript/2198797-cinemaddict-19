@@ -1,25 +1,20 @@
 
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-
-const EMOJIS = {
-  'angry': 'angry.png',
-  'puke': 'puke.png',
-  'sleeping': 'sleeping.png',
-  'smile': 'smile.png'
-};
+import {humanizeCommentDate} from '../utils.js';
+import { UserAction } from '../const.js';
 
 function createCommentTemplate(comment) {
   return (`
   <li class="film-details__comment" id="comment${comment.id}">
   <span class="film-details__comment-emoji">
-    <img src="./images/emoji/${EMOJIS[comment.emotion]}" width="55" height="55" alt="emoji-puke">
+    <img src="./images/emoji/${comment.emotion}.png" width="55" height="55" alt="emoji-puke">
   </span>
   <div>
     <p class="film-details__comment-text">${comment.comment}</p>
     <p class="film-details__comment-info">
       <span class="film-details__comment-author">${comment.author}</span>
       <span class="film-details__comment-day">${humanizeCommentDate(comment.date)}</span>
-      <button class="film-details__comment-delete"  data-id="${comment.id}" ${isDisabled ? 'disabled' : ''}>${comment.isDeleting ? 'Deleting...' : 'Delete'}</button>
+      <button class="film-details__comment-delete"  data-id="${comment.id}" ${comment.isDisabled ? 'disabled' : ''}>${comment.isDeleting ? 'Deleting...' : 'Delete'}</button>
     </p>
   </div>
 </li>
@@ -28,11 +23,12 @@ function createCommentTemplate(comment) {
 
 
 export default class CommentView extends AbstractStatefulView{
-  #handlerDeleteComment = null;
+  #updatePopupInfo = null;
 
-  constructor({comment}) {
+  constructor({comment, updatePopupInfo}) {
     super();
-    this._setState(PopupView.parseFilmAndCommentsToState(comment));
+    this.#updatePopupInfo = updatePopupInfo;
+    this._setState(CommentView.parseCommentToState(comment));
     this._restoreHandlers();
   }
 
@@ -42,18 +38,10 @@ export default class CommentView extends AbstractStatefulView{
   }
 
 
-  #deleteCommentHandler = (evt) => {
-    evt.preventDefault();
-    if (evt.target.tagName !== 'BUTTON') {
-      return;
-    }
-    this.#previousComment = evt.target.parentElement.parentElement.parentElement.previousElementSibling;
-    const index = this._state.comments.findIndex((element) => element.id === evt.target.dataset.id);
-    this._state.comments[index].isDeleting = true;
-    this.#updatePopupInfo(UserAction.DELETE_COMMENT ,{
-      film: PopupView.parseStateToFilm({...this._state,}),
-      commentId: Number(evt.target.dataset.id),
-    });
+  #deleteCommentHandler = () => {
+    this.#updatePopupInfo(UserAction.DELETE_COMMENT ,
+      CommentView.parseStateToComment({...this._state,})
+    );
   };
 
 
@@ -69,6 +57,8 @@ export default class CommentView extends AbstractStatefulView{
     const comment = {...state};
     delete comment.isDeleting;
     delete comment.isDisabled;
+
+    return comment;
   }
 
 
