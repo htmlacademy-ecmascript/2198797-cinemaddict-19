@@ -62,7 +62,6 @@ export default class FilmsModel extends Observable {
     } catch(err) {
       return [];
     }
-
   }
 
   getFilmsCount(){

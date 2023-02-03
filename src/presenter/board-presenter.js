@@ -12,10 +12,22 @@ import ShowMoreButtonPresenter from './show-more-button-presenter.js';
 import { SortType, UserAction, UpdateType} from '../const.js';
 import {sortByDate, sortByRating} from '../utils.js';
 import {filter} from '../utils/filter.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 
 const FILMS_NUMBER_PER_STEP = 5;
 
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
+
 export default class BoardPresenter {
+
+  #uiBlocker = new UiBlocker({
+    lowerLimit: TimeLimit.LOWER_LIMIT,
+    upperLimit: TimeLimit.UPPER_LIMIT
+  });
+
   #siteBodyElement = null;
   #siteMainElement = null;
   #siteHeaderElement = null;
@@ -165,6 +177,7 @@ export default class BoardPresenter {
   };
 
   #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
     switch (actionType) {
       case UserAction.UPDATE_FILM_DETAILS:
         try{
@@ -204,6 +217,7 @@ export default class BoardPresenter {
         }
         break;
     }
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
