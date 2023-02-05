@@ -11,7 +11,6 @@ export default class FilmPresenter{
 
   #filmCardView = null;
   #film = null;
-  #dataMap = null;
 
   constructor({openPopupHendler,filmsContainer, updateUserToFilmMapHandler}) {
     this.#openPopupHendler = openPopupHendler;

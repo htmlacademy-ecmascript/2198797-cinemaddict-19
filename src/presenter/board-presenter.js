@@ -10,9 +10,10 @@ import PopupPresenter from './popup-presenter.js';
 import FilterPresenter from './filter-presenter.js';
 import ShowMoreButtonPresenter from './show-more-button-presenter.js';
 import { SortType, UserAction, UpdateType} from '../const.js';
-import {sortByDate, sortByRating} from '../utils.js';
+import {sortByDate, sortByRating, sortByComments} from '../utils.js';
 import {filter} from '../utils/filter.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
+import ExtraPresenter from './extra-presenter.js';
 
 const FILMS_NUMBER_PER_STEP = 5;
 
@@ -37,6 +38,7 @@ export default class BoardPresenter {
 
   #filmPresentorCollection = [];
   #filterPresenter = null;
+  #extraPresenter = null;
   #popupPresenter = null;
   #showMoreButtonPresenter = null;
   #filterType = null;
@@ -87,6 +89,11 @@ export default class BoardPresenter {
 
   get userToFilmMap() {
     return this.#filmsModel.userToFilmMap;
+  }
+
+  #getRawFilms(){
+    const films = [...this.#filmsModel.films];
+    return films;
   }
 
   #renderFilm = (film) => {
@@ -191,6 +198,7 @@ export default class BoardPresenter {
               element.setAborting();
             }
           });
+          this.#extraPresenter.setAborting(update.film.id);
         }
         break;
       case UserAction.UPDATE_SORT_VIEW:
@@ -229,6 +237,7 @@ export default class BoardPresenter {
             element.init(data.film);
           }
         });
+        this.#renderExtra();
         if(this.#popupPresenter !== null ){
           this.#popupPresenter.updatePopupView(data);
         }
@@ -237,6 +246,7 @@ export default class BoardPresenter {
         this.#clearFilmList();
         this.#renderFilms();
         this.#renderShowMoreButton();
+        this.#renderExtra();
         break;
       case UpdateType.MAJOR:
         this.#clearFilmList();
@@ -244,6 +254,7 @@ export default class BoardPresenter {
         this.#renderShowMoreButton();
         this.#currentSortType = SortType.DEFAULT;
         this.#sortView.setActiveSortType(SortType.DEFAULT);
+        this.#renderExtra();
         break;
       case UpdateType.INIT:
         this.#isLoading = false;
@@ -261,10 +272,16 @@ export default class BoardPresenter {
     const slicedFilms = this.films.slice(this.#renderFilmCount, newRenderedFilmCount);
     slicedFilms.forEach((film) => this.#renderFilm(film));
     this.#renderFilmCount = newRenderedFilmCount;
+
+
   }
 
   #renderLoading() {
     render(this.#loadingComponent, this.#filmsList);
+  }
+
+  #renderExtra() {
+    this.#extraPresenter.init(this.#getRawFilms());
   }
 
   #renderBoard(){
@@ -280,6 +297,13 @@ export default class BoardPresenter {
     this.#renderProfileRatingView();
     this.#renderFilms();
     this.#renderShowMoreButton();
+    this.#extraPresenter = new ExtraPresenter({
+      filmsContainer: this.#filmsListComponent.element,
+      openPopupHendler: this.#openPopupHandler,
+      updateUserToFilmMapHandler: this.#handleViewAction
+    });
+    this.#renderExtra();
   }
+  
 }
 

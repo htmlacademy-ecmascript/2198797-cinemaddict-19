@@ -3,36 +3,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 const MINUTES_IN_HOUR = 60;
 
-const getRandomArrayElement = (items) => items[Math.floor(Math.random() * items.length)];
-
-const getRandomPositiveInteger = (a, b) => {
-  if (a < 0 || b < 0) {
-    return NaN;
-  }
-  const lower = Math.ceil(Math.min(a, b));
-  const upper = Math.floor(Math.max(a, b));
-
-  const result = Math.random() * (upper - lower + 1) + lower;
-  return Math.floor(result);
-};
-const createUniqRandomArray = (min, max, amount) => {
-  if (min < 0 || max < 0) {
-    return NaN;
-  }
-  if (amount > max || min > max) {
-    return NaN;
-  }
-  const values = [];
-
-  while (values.length < amount) {
-    const value = getRandomPositiveInteger(min, max);
-    if(!values.includes(value)){
-      values.push(value);
-    }
-  }
-  return values;
-};
-
 const padTo2Digits = (num) => num.toString().padStart(1, '0');
 
 const convertMinutesToHours = (totalMinutes) => {
@@ -70,15 +40,25 @@ function sortByDate(filmA, filmB) {
 }
 
 function sortByRating(filmA, filmB) {
-  if (filmA.rating < filmB.rating) {
+  if (filmA.rating > filmB.rating) {
     return -1;
   }
-  if (filmA.rating > filmB.rating) {
+  if (filmA.rating < filmB.rating) {
     return 1;
   }
   return 0;
 }
 
-export {getRandomArrayElement, getRandomPositiveInteger, createUniqRandomArray, convertMinutesToHours, humanizeDate, humanizeCommentDate, sortByDate, sortByRating};
+function sortByComments(filmA, filmB) {
+  if (filmA.comments.length > filmB.comments.length) {
+    return -1;
+  }
+  if (filmA.comments.length < filmB.comments.length) {
+    return 1;
+  }
+  return 0;
+}
+
+export {convertMinutesToHours, humanizeDate, humanizeCommentDate, sortByDate, sortByRating, sortByComments};
 
 
