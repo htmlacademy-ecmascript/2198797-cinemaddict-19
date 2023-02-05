@@ -8,7 +8,7 @@ import FilmsModel from './model/films-model.js';
 import FiltersModel from './model/filters-model.js';
 import FilmApiService from './film-api-service.js';
 
-const AUTHORIZATION = 'Basic c2h5ohne145';
+const AUTHORIZATION = 'Basic c2h5ohne14567';
 const END_POINT = 'https://19.ecmascript.pages.academy/cinemaddict';
 
 const filmsModel = new FilmsModel({filmApiService: new FilmApiService(END_POINT, AUTHORIZATION)});
