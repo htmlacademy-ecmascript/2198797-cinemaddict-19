@@ -31,3 +31,5 @@ export const UpdateType = {
   NO_UPDATE: 'NO_UPDATE',
 };
 
+export const EXTRAS = ['rating', 'comments'];
+

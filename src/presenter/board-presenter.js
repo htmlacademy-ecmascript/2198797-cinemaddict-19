@@ -10,7 +10,7 @@ import PopupPresenter from './popup-presenter.js';
 import FilterPresenter from './filter-presenter.js';
 import ShowMoreButtonPresenter from './show-more-button-presenter.js';
 import { SortType, UserAction, UpdateType} from '../const.js';
-import {sortByDate, sortByRating, sortByComments} from '../utils.js';
+import {sortByDate, sortByRating} from '../utils.js';
 import {filter} from '../utils/filter.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import ExtraPresenter from './extra-presenter.js';
@@ -304,6 +304,5 @@ export default class BoardPresenter {
     });
     this.#renderExtra();
   }
-  
 }
 
