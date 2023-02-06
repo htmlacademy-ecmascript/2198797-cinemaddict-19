@@ -13,7 +13,7 @@ function createFilterTemplate(data, filter) {
   `);
 }
 
-export default class MenuView extends AbstractView {
+export default class FilterView extends AbstractView {
 
   #filmsDataCounter = null;
   #currentFilter = null;
