@@ -22,10 +22,10 @@ export default class FilmDetailsControlView extends AbstractView {
     this.#handlerFilmControlButton = onFilmControlButton;
     this.#film = film;
 
-    this.element.addEventListener('click', this.#FilmControlButtonHandler);
+    this.element.addEventListener('click', this.#filmControlButtonHandler);
   }
 
-  #FilmControlButtonHandler = (evt) => {
+  #filmControlButtonHandler = (evt) => {
     if(evt.target.tagName !== 'BUTTON'){
       return;
     }
